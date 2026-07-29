@@ -1,0 +1,136 @@
+{
+  "definition": "SUE = (actual - mean) / max(stdev, 0.05*|mean|, 0.005)",
+  "per_fault": {
+    "fabricated_value": {
+      "n": 50,
+      "declared_materiality": "high",
+      "changes_declared_number": 1.0,
+      "median_abs_delta_sue": 5.266970618034447,
+      "max_abs_delta_sue": 15.744680851063828,
+      "claim_reversal_rate": 0.28
+    },
+    "quote_mismatch": {
+      "n": 50,
+      "declared_materiality": "medium",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    },
+    "unit_scaling": {
+      "n": 50,
+      "declared_materiality": "high",
+      "changes_declared_number": 1.0,
+      "median_abs_delta_sue": 20646.0,
+      "max_abs_delta_sue": 23490.0,
+      "claim_reversal_rate": 0.2
+    },
+    "basis_conflict": {
+      "n": 50,
+      "declared_materiality": "high",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    },
+    "period_mismatch": {
+      "n": 50,
+      "declared_materiality": "high",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    },
+    "entity_confusion": {
+      "n": 50,
+      "declared_materiality": "high",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    },
+    "stale_expectation": {
+      "n": 50,
+      "declared_materiality": "medium",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    },
+    "future_leakage": {
+      "n": 50,
+      "declared_materiality": "high",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    },
+    "definition_conflict": {
+      "n": 50,
+      "declared_materiality": "high",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    },
+    "missing_handoff": {
+      "n": 50,
+      "declared_materiality": "medium",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    },
+    "role_violation": {
+      "n": 50,
+      "declared_materiality": "medium",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    },
+    "silent_overwrite": {
+      "n": 50,
+      "declared_materiality": "high",
+      "changes_declared_number": 1.0,
+      "median_abs_delta_sue": 7.345895715023232,
+      "max_abs_delta_sue": 50.99999999999999,
+      "claim_reversal_rate": 0.22
+    },
+    "wrong_security": {
+      "n": 50,
+      "declared_materiality": "high",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    },
+    "wrong_window": {
+      "n": 50,
+      "declared_materiality": "medium",
+      "changes_declared_number": 0.0,
+      "median_abs_delta_sue": 0.0,
+      "max_abs_delta_sue": 0.0,
+      "claim_reversal_rate": 0.0
+    }
+  },
+  "magnitude_faults": [
+    "fabricated_value",
+    "silent_overwrite",
+    "unit_scaling"
+  ],
+  "admissibility_faults": [
+    "basis_conflict",
+    "definition_conflict",
+    "entity_confusion",
+    "future_leakage",
+    "missing_handoff",
+    "period_mismatch",
+    "quote_mismatch",
+    "role_violation",
+    "stale_expectation",
+    "wrong_security",
+    "wrong_window"
+  ],
+  "note": "Faults outside magnitude_faults leave the declared number intact; their materiality is admissibility of the claim, not its size."
+}

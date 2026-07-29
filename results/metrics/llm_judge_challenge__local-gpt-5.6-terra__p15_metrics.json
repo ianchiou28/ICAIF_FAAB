@@ -1,0 +1,150 @@
+{
+  "split": "challenge",
+  "n": 200,
+  "n_clean": 60,
+  "n_fault": 140,
+  "clean_fpr": 0.2,
+  "fault_detection_recall": 0.8714285714285714,
+  "root_cause_accuracy": 0.8071428571428572,
+  "root_cause_macro_f1": 0.8018347204355704,
+  "agent_attribution_accuracy": 0.8142857142857143,
+  "decisive_step_accuracy": 0.8142857142857143,
+  "joint_agent_step_accuracy": 0.8142857142857143,
+  "responsibility_localization_accuracy": 0.8142857142857143,
+  "label_agent_step_pairs": [
+    [
+      "decision_agent",
+      4
+    ],
+    [
+      "evidence_agent",
+      1
+    ],
+    [
+      "expectation_agent",
+      2
+    ],
+    [
+      "settlement_agent",
+      5
+    ]
+  ],
+  "agent_step_bijective": true,
+  "materiality_weighted_recall": 0.9027027027027027,
+  "unresolved_rate": 0.0,
+  "verdict_counts": {
+    "pass": 66,
+    "reject": 133,
+    "qualified": 1
+  },
+  "per_fault": {
+    "fabricated_value": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 0.8,
+      "agent_accuracy": 1.0,
+      "step_accuracy": 1.0
+    },
+    "quote_mismatch": {
+      "n": 10,
+      "detection_recall": 0.9,
+      "root_cause_accuracy": 0.9,
+      "agent_accuracy": 0.9,
+      "step_accuracy": 0.9
+    },
+    "unit_scaling": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 0.8,
+      "agent_accuracy": 0.8,
+      "step_accuracy": 0.8
+    },
+    "basis_conflict": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 1.0,
+      "agent_accuracy": 0.8,
+      "step_accuracy": 0.8
+    },
+    "period_mismatch": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 1.0,
+      "agent_accuracy": 0.9,
+      "step_accuracy": 0.9
+    },
+    "entity_confusion": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 1.0,
+      "agent_accuracy": 1.0,
+      "step_accuracy": 1.0
+    },
+    "stale_expectation": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 1.0,
+      "agent_accuracy": 1.0,
+      "step_accuracy": 1.0
+    },
+    "future_leakage": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 1.0,
+      "agent_accuracy": 1.0,
+      "step_accuracy": 1.0
+    },
+    "definition_conflict": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 0.9,
+      "agent_accuracy": 0.8,
+      "step_accuracy": 0.8
+    },
+    "missing_handoff": {
+      "n": 10,
+      "detection_recall": 0.0,
+      "root_cause_accuracy": 0.0,
+      "agent_accuracy": 0.0,
+      "step_accuracy": 0.0
+    },
+    "role_violation": {
+      "n": 10,
+      "detection_recall": 0.3,
+      "root_cause_accuracy": 0.0,
+      "agent_accuracy": 0.3,
+      "step_accuracy": 0.3
+    },
+    "silent_overwrite": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 1.0,
+      "agent_accuracy": 1.0,
+      "step_accuracy": 1.0
+    },
+    "wrong_security": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 1.0,
+      "agent_accuracy": 1.0,
+      "step_accuracy": 1.0
+    },
+    "wrong_window": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 0.9,
+      "agent_accuracy": 0.9,
+      "step_accuracy": 0.9
+    }
+  },
+  "method": "llm_judge",
+  "provider": "local",
+  "model": "gpt-5.6-terra",
+  "api_calls": 200,
+  "api_requests_including_retries": 200,
+  "api_failures": 0,
+  "prompt_tokens": 398938,
+  "completion_tokens": 55145,
+  "total_tokens": 454083,
+  "mean_latency_s": 7.4854045
+}

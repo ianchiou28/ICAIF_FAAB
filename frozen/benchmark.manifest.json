@@ -1,0 +1,27 @@
+{
+  "version": "faab-1.4",
+  "seed": 20260726,
+  "db": "data/us500.db",
+  "n_cases": 1000,
+  "db_sha256": "1a9e7f8be8beb52c284f57bf30b4e2922a802cbe2ec0c17406544bba2167e9e1",
+  "n_clean": 300,
+  "n_per_fault": 50,
+  "clean_policy": "exact filing actual_eps; explicit non-GAAP EPS; no forecast/dividend/basic ambiguity; filing actual aligned to IBES same-source actual within max($0.01, 1%)",
+  "fault_types": [
+    "fabricated_value",
+    "quote_mismatch",
+    "unit_scaling",
+    "basis_conflict",
+    "period_mismatch",
+    "entity_confusion",
+    "stale_expectation",
+    "future_leakage",
+    "definition_conflict",
+    "missing_handoff",
+    "role_violation",
+    "silent_overwrite",
+    "wrong_security",
+    "wrong_window"
+  ],
+  "sha256": "b54fad29993e408178564b01dc6ea8006e17d5d8df5d59c86ae63734ec5864a6"
+}

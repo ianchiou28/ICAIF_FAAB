@@ -1,0 +1,4247 @@
+{
+  "seed": 101,
+  "training_bundle": {
+    "training_split": "faab-v1.4-development-only",
+    "n_examples": 50,
+    "seed": 101
+  },
+  "rounds": [
+    {
+      "round": 0,
+      "valid": false,
+      "validation_error": "rules[1]:duplicate_priority:10",
+      "response": {
+        "version": "faab-rule-dsl-1.0",
+        "rules": [
+          {
+            "rule_id": "R01",
+            "priority": 10,
+            "fault_type": "quote_mismatch",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "The evidence quote does not contain the raw value number",
+            "condition": {
+              "op": "any",
+              "args": [
+                {
+                  "op": "number_not_in_quote"
+                },
+                {
+                  "op": "number_in_other_span"
+                }
+              ]
+            }
+          },
+          {
+            "rule_id": "R02",
+            "priority": 10,
+            "fault_type": "role_violation",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence agent provided a recommendation when it should not",
+            "condition": {
+              "op": "not_empty",
+              "value": {
+                "path": "evidence.recommendation"
+              }
+            }
+          },
+          {
+            "rule_id": "R03",
+            "priority": 10,
+            "fault_type": "future_leakage",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation visible_at is after decision time or vintage is after latest eligible vintage",
+            "condition": {
+              "op": "any",
+              "args": [
+                {
+                  "op": "gt_time",
+                  "left": {
+                    "path": "expectation.visible_at"
+                  },
+                  "right": {
+                    "path": "decision.decision_time"
+                  }
+                },
+                {
+                  "op": "ne",
+                  "left": {
+                    "path": "expectation.vintage"
+                  },
+                  "right": {
+                    "path": "expectation.latest_eligible_vintage"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "rule_id": "R04",
+            "priority": 10,
+            "fault_type": "definition_conflict",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation definition does not match evidence definition",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.definition"
+              },
+              "right": {
+                "path": "evidence.definition"
+              }
+            }
+          },
+          {
+            "rule_id": "R05",
+            "priority": 10,
+            "fault_type": "basis_conflict",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation basis does not match evidence basis",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.basis"
+              },
+              "right": {
+                "path": "evidence.basis"
+              }
+            }
+          },
+          {
+            "rule_id": "R06",
+            "priority": 10,
+            "fault_type": "wrong_window",
+            "responsible_agent": "settlement_agent",
+            "decisive_step": 5,
+            "description": "Settlement horizon_td does not match source control_horizon_td",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "settlement.horizon_td"
+              },
+              "right": {
+                "path": "source.control_horizon_td"
+              }
+            }
+          },
+          {
+            "rule_id": "R07",
+            "priority": 10,
+            "fault_type": "missing_handoff",
+            "responsible_agent": "decision_agent",
+            "decisive_step": 4,
+            "description": "Consistency hash is not in decision qualification_refs",
+            "condition": {
+              "op": "not_list_contains",
+              "container": {
+                "path": "decision.qualification_refs"
+              },
+              "value": {
+                "path": "consistency.hash"
+              }
+            }
+          },
+          {
+            "rule_id": "R08",
+            "priority": 10,
+            "fault_type": "unit_scaling",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence unit_multiplier is not 1.0",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "evidence.unit_multiplier"
+              },
+              "right": {
+                "const": 1.0
+              }
+            }
+          },
+          {
+            "rule_id": "R09",
+            "priority": 10,
+            "fault_type": "entity_confusion",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence entity does not match source ticker",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "evidence.entity"
+              },
+              "right": {
+                "path": "source.ticker"
+              }
+            }
+          },
+          {
+            "rule_id": "R10",
+            "priority": 10,
+            "fault_type": "fabricated_value",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence raw_value does not appear in the quote",
+            "condition": {
+              "op": "number_not_in_quote"
+            }
+          },
+          {
+            "rule_id": "R11",
+            "priority": 10,
+            "fault_type": "period_mismatch",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation period does not match evidence period",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.period"
+              },
+              "right": {
+                "path": "evidence.period"
+              }
+            }
+          },
+          {
+            "rule_id": "R12",
+            "priority": 10,
+            "fault_type": "stale_expectation",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation vintage is not the latest eligible vintage",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.vintage"
+              },
+              "right": {
+                "path": "expectation.latest_eligible_vintage"
+              }
+            }
+          },
+          {
+            "rule_id": "R13",
+            "priority": 10,
+            "fault_type": "silent_overwrite",
+            "responsible_agent": "decision_agent",
+            "decisive_step": 4,
+            "description": "Decision value_used does not match consistency normalized_value",
+            "condition": {
+              "op": "numeric_not_close",
+              "left": {
+                "path": "decision.value_used"
+              },
+              "right": {
+                "path": "consistency.normalized_value"
+              }
+            }
+          },
+          {
+            "rule_id": "R14",
+            "priority": 10,
+            "fault_type": "wrong_security",
+            "responsible_agent": "settlement_agent",
+            "decisive_step": 5,
+            "description": "Settlement ticker does not match source ticker",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "settlement.ticker"
+              },
+              "right": {
+                "path": "source.ticker"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "valid": true,
+      "rule_set": {
+        "version": "faab-rule-dsl-1.0",
+        "rules": [
+          {
+            "rule_id": "R01",
+            "priority": 10,
+            "fault_type": "quote_mismatch",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "The evidence quote does not contain the raw value number",
+            "condition": {
+              "op": "any",
+              "args": [
+                {
+                  "op": "number_not_in_quote"
+                },
+                {
+                  "op": "number_in_other_span"
+                }
+              ]
+            }
+          },
+          {
+            "rule_id": "R02",
+            "priority": 20,
+            "fault_type": "role_violation",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence agent provided a recommendation when it should not",
+            "condition": {
+              "op": "not_empty",
+              "value": {
+                "path": "evidence.recommendation"
+              }
+            }
+          },
+          {
+            "rule_id": "R03",
+            "priority": 30,
+            "fault_type": "future_leakage",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation visible_at is after decision time or vintage is after latest eligible vintage",
+            "condition": {
+              "op": "any",
+              "args": [
+                {
+                  "op": "gt_time",
+                  "left": {
+                    "path": "expectation.visible_at"
+                  },
+                  "right": {
+                    "path": "decision.decision_time"
+                  }
+                },
+                {
+                  "op": "ne",
+                  "left": {
+                    "path": "expectation.vintage"
+                  },
+                  "right": {
+                    "path": "expectation.latest_eligible_vintage"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "rule_id": "R04",
+            "priority": 40,
+            "fault_type": "definition_conflict",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation definition does not match evidence definition",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.definition"
+              },
+              "right": {
+                "path": "evidence.definition"
+              }
+            }
+          },
+          {
+            "rule_id": "R05",
+            "priority": 50,
+            "fault_type": "basis_conflict",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation basis does not match evidence basis",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.basis"
+              },
+              "right": {
+                "path": "evidence.basis"
+              }
+            }
+          },
+          {
+            "rule_id": "R06",
+            "priority": 60,
+            "fault_type": "wrong_window",
+            "responsible_agent": "settlement_agent",
+            "decisive_step": 5,
+            "description": "Settlement horizon_td does not match source control_horizon_td",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "settlement.horizon_td"
+              },
+              "right": {
+                "path": "source.control_horizon_td"
+              }
+            }
+          },
+          {
+            "rule_id": "R07",
+            "priority": 70,
+            "fault_type": "missing_handoff",
+            "responsible_agent": "decision_agent",
+            "decisive_step": 4,
+            "description": "Consistency hash is not in decision qualification_refs",
+            "condition": {
+              "op": "not_list_contains",
+              "container": {
+                "path": "decision.qualification_refs"
+              },
+              "value": {
+                "path": "consistency.hash"
+              }
+            }
+          },
+          {
+            "rule_id": "R08",
+            "priority": 80,
+            "fault_type": "unit_scaling",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence unit_multiplier is not 1.0",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "evidence.unit_multiplier"
+              },
+              "right": {
+                "const": 1.0
+              }
+            }
+          },
+          {
+            "rule_id": "R09",
+            "priority": 90,
+            "fault_type": "entity_confusion",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence entity does not match source ticker",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "evidence.entity"
+              },
+              "right": {
+                "path": "source.ticker"
+              }
+            }
+          },
+          {
+            "rule_id": "R10",
+            "priority": 100,
+            "fault_type": "fabricated_value",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence raw_value does not appear in the quote",
+            "condition": {
+              "op": "number_not_in_quote"
+            }
+          },
+          {
+            "rule_id": "R11",
+            "priority": 110,
+            "fault_type": "period_mismatch",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation period does not match evidence period",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.period"
+              },
+              "right": {
+                "path": "evidence.period"
+              }
+            }
+          },
+          {
+            "rule_id": "R12",
+            "priority": 120,
+            "fault_type": "stale_expectation",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation vintage is not the latest eligible vintage",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.vintage"
+              },
+              "right": {
+                "path": "expectation.latest_eligible_vintage"
+              }
+            }
+          },
+          {
+            "rule_id": "R13",
+            "priority": 130,
+            "fault_type": "silent_overwrite",
+            "responsible_agent": "decision_agent",
+            "decisive_step": 4,
+            "description": "Decision value_used does not match consistency normalized_value",
+            "condition": {
+              "op": "numeric_not_close",
+              "left": {
+                "path": "decision.value_used"
+              },
+              "right": {
+                "path": "consistency.normalized_value"
+              }
+            }
+          },
+          {
+            "rule_id": "R14",
+            "priority": 140,
+            "fault_type": "wrong_security",
+            "responsible_agent": "settlement_agent",
+            "decisive_step": 5,
+            "description": "Settlement ticker does not match source ticker",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "settlement.ticker"
+              },
+              "right": {
+                "path": "source.ticker"
+              }
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "split": "dev",
+        "n": 200,
+        "n_clean": 60,
+        "n_fault": 140,
+        "clean_fpr": 0.0,
+        "fault_detection_recall": 1.0,
+        "root_cause_accuracy": 0.8571428571428571,
+        "root_cause_macro_f1": 0.8095238095238095,
+        "agent_attribution_accuracy": 1.0,
+        "decisive_step_accuracy": 1.0,
+        "joint_agent_step_accuracy": 1.0,
+        "materiality_weighted_recall": 1.0,
+        "unresolved_rate": 0.0,
+        "verdict_counts": {
+          "reject": 140,
+          "pass": 60
+        },
+        "per_fault": {
+          "fabricated_value": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 0.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "quote_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "unit_scaling": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "basis_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "period_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "entity_confusion": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "stale_expectation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 0.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "future_leakage": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "definition_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "missing_handoff": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "role_violation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "silent_overwrite": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_security": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_window": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          }
+        }
+      },
+      "feedback": {
+        "n_errors_shown": 20,
+        "errors": [
+          {
+            "truth": {
+              "fault_type": "stale_expectation",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "prediction": {
+              "fault_type": "future_leakage",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "ETN",
+                "source.period": "2023-03-31",
+                "source.t_pub": "2023-05-02T07:00:18-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "ETN",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.88,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.88,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2023-03-31",
+                "evidence.quote": "Record first quarter adjusted earnings per share of $1.88",
+                "evidence.recommendation": null,
+                "expectation.entity": "ETN",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2023-03-31",
+                "expectation.vintage": "2023-03-16",
+                "expectation.visible_at": "2023-03-16T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2023-04-20",
+                "consistency.normalized_value": 1.88,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2023-03-31",
+                "decision.value_used": 1.88,
+                "decision.override_reason": null,
+                "decision.decision_time": "2023-05-02T07:00:18-05:00",
+                "settlement.ticker": "ETN",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": false,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": false,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "CMS",
+                "source.period": "2024-03-31",
+                "source.t_pub": "2024-04-25T06:37:34-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "CMS",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.34,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.34,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-03-31",
+                "evidence.quote": "adjusted earnings per share for the first quarter were $0.97",
+                "evidence.recommendation": null,
+                "expectation.entity": "CMS",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-03-31",
+                "expectation.vintage": "2024-04-18",
+                "expectation.visible_at": "2024-04-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-04-18",
+                "consistency.normalized_value": 0.97,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-03-31",
+                "decision.value_used": 0.97,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-04-25T06:37:34-05:00",
+                "settlement.ticker": "CMS",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "stale_expectation",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "prediction": {
+              "fault_type": "future_leakage",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "STZ",
+                "source.period": "2025-08-31",
+                "source.t_pub": "2025-10-06T16:08:27-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "STZ",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 3.63,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 3.63,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-08-31",
+                "evidence.quote": "Comparable EPS of $3.63",
+                "evidence.recommendation": null,
+                "expectation.entity": "STZ",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-08-31",
+                "expectation.vintage": "2025-08-14",
+                "expectation.visible_at": "2025-08-14T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-09-18",
+                "consistency.normalized_value": 3.63,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-08-31",
+                "decision.value_used": 3.63,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-10-06T16:08:27-05:00",
+                "settlement.ticker": "STZ",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": false,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": false,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BMY",
+                "source.period": "2023-12-31",
+                "source.t_pub": "2024-02-02T07:46:16-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BMY",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.07,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.07,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2023-12-31",
+                "evidence.quote": "Non-GAAP EPS of $1.70",
+                "evidence.recommendation": null,
+                "expectation.entity": "BMY",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2023-12-31",
+                "expectation.vintage": "2024-01-18",
+                "expectation.visible_at": "2024-01-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-01-18",
+                "consistency.normalized_value": 1.7,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2023-12-31",
+                "decision.value_used": 1.7,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-02-02T07:46:16-05:00",
+                "settlement.ticker": "BMY",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "JNJ",
+                "source.period": "2025-03-31",
+                "source.t_pub": "2025-04-15T08:14:19-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "JNJ",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 3.14,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 3.14,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-03-31",
+                "evidence.quote": "adjusted EPS increased to $2.77",
+                "evidence.recommendation": null,
+                "expectation.entity": "JNJ",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-03-31",
+                "expectation.vintage": "2025-03-20",
+                "expectation.visible_at": "2025-03-20T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-03-20",
+                "consistency.normalized_value": 2.77,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-03-31",
+                "decision.value_used": 2.77,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-04-15T08:14:19-05:00",
+                "settlement.ticker": "JNJ",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "stale_expectation",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "prediction": {
+              "fault_type": "future_leakage",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "TSN",
+                "source.period": "2025-09-30",
+                "source.t_pub": "2025-11-10T07:32:37-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "TSN",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.15,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.15,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-09-30",
+                "evidence.quote": "Adjusted EPS of $1.15, up 25% from prior year",
+                "evidence.recommendation": null,
+                "expectation.entity": "TSN",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-09-30",
+                "expectation.vintage": "2025-09-18",
+                "expectation.visible_at": "2025-09-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-10-16",
+                "consistency.normalized_value": 1.15,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-09-30",
+                "decision.value_used": 1.15,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-11-10T07:32:37-05:00",
+                "settlement.ticker": "TSN",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": false,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": false,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "WMT",
+                "source.period": "2024-10-31",
+                "source.t_pub": "2024-11-19T06:59:42-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "WMT",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 0.95,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 0.95,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-10-31",
+                "evidence.quote": "Adjusted EPS of $0.58",
+                "evidence.recommendation": null,
+                "expectation.entity": "WMT",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-10-31",
+                "expectation.vintage": "2024-11-14",
+                "expectation.visible_at": "2024-11-14T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-11-14",
+                "consistency.normalized_value": 0.58,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-10-31",
+                "decision.value_used": 0.58,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-11-19T06:59:42-05:00",
+                "settlement.ticker": "WMT",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "stale_expectation",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "prediction": {
+              "fault_type": "future_leakage",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "ADM",
+                "source.period": "2025-03-31",
+                "source.t_pub": "2025-05-06T07:04:16-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "ADM",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 0.7,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 0.7,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-03-31",
+                "evidence.quote": "adjusted EPS 1,2 of $0.70",
+                "evidence.recommendation": null,
+                "expectation.entity": "ADM",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-03-31",
+                "expectation.vintage": "2025-03-20",
+                "expectation.visible_at": "2025-03-20T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-04-17",
+                "consistency.normalized_value": 0.7,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-03-31",
+                "decision.value_used": 0.7,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-05-06T07:04:16-05:00",
+                "settlement.ticker": "ADM",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": false,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": false,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BMY",
+                "source.period": "2024-06-30",
+                "source.t_pub": "2024-07-26T07:46:16-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BMY",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.44,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.44,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-06-30",
+                "evidence.quote": "Non-GAAP EPS was $2.07",
+                "evidence.recommendation": null,
+                "expectation.entity": "BMY",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-06-30",
+                "expectation.vintage": "2024-07-18",
+                "expectation.visible_at": "2024-07-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-07-18",
+                "consistency.normalized_value": 2.07,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-06-30",
+                "decision.value_used": 2.07,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-07-26T07:46:16-05:00",
+                "settlement.ticker": "BMY",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "MO",
+                "source.period": "2024-06-30",
+                "source.t_pub": "2024-07-31T07:02:01-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "MO",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.68,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.68,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-06-30",
+                "evidence.quote": "Adjusted diluted EPS was unchanged at $1.31",
+                "evidence.recommendation": null,
+                "expectation.entity": "MO",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-06-30",
+                "expectation.vintage": "2024-07-18",
+                "expectation.visible_at": "2024-07-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-07-18",
+                "consistency.normalized_value": 1.31,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-06-30",
+                "decision.value_used": 1.31,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-07-31T07:02:01-05:00",
+                "settlement.ticker": "MO",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "stale_expectation",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "prediction": {
+              "fault_type": "future_leakage",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "OTIS",
+                "source.period": "2025-06-30",
+                "source.t_pub": "2025-07-23T06:12:50-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "OTIS",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.05,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.05,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-06-30",
+                "evidence.quote": "adjusted EPS decreased 1% to $1.05",
+                "evidence.recommendation": null,
+                "expectation.entity": "OTIS",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-06-30",
+                "expectation.vintage": "2025-06-19",
+                "expectation.visible_at": "2025-06-19T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-07-17",
+                "consistency.normalized_value": 1.05,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-06-30",
+                "decision.value_used": 1.05,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-07-23T06:12:50-05:00",
+                "settlement.ticker": "OTIS",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": false,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": false,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "OTIS",
+                "source.period": "2025-06-30",
+                "source.t_pub": "2025-07-23T06:12:50-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "OTIS",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.42,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.42,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-06-30",
+                "evidence.quote": "adjusted EPS decreased 1% to $1.05",
+                "evidence.recommendation": null,
+                "expectation.entity": "OTIS",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-06-30",
+                "expectation.vintage": "2025-07-17",
+                "expectation.visible_at": "2025-07-17T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-07-17",
+                "consistency.normalized_value": 1.05,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-06-30",
+                "decision.value_used": 1.05,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-07-23T06:12:50-05:00",
+                "settlement.ticker": "OTIS",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "stale_expectation",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "prediction": {
+              "fault_type": "future_leakage",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BAX",
+                "source.period": "2025-06-30",
+                "source.t_pub": "2025-07-31T07:18:36-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BAX",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 0.59,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 0.59,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-06-30",
+                "evidence.quote": "adjusted diluted EPS from continuing operations of $0.59",
+                "evidence.recommendation": null,
+                "expectation.entity": "BAX",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-06-30",
+                "expectation.vintage": "2025-06-19",
+                "expectation.visible_at": "2025-06-19T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-07-17",
+                "consistency.normalized_value": 0.59,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-06-30",
+                "decision.value_used": 0.59,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-07-31T07:18:36-05:00",
+                "settlement.ticker": "BAX",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": false,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": false,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "stale_expectation",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "prediction": {
+              "fault_type": "future_leakage",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "ABT",
+                "source.period": "2024-09-30",
+                "source.t_pub": "2024-10-16T07:37:36-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "ABT",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.21,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.21,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-09-30",
+                "evidence.quote": "adjusted diluted EPS of $1.21",
+                "evidence.recommendation": null,
+                "expectation.entity": "ABT",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-09-30",
+                "expectation.vintage": "2024-08-15",
+                "expectation.visible_at": "2024-08-15T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-09-19",
+                "consistency.normalized_value": 1.21,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-09-30",
+                "decision.value_used": 1.21,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-10-16T07:37:36-05:00",
+                "settlement.ticker": "ABT",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": false,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": false,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "stale_expectation",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "prediction": {
+              "fault_type": "future_leakage",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BMY",
+                "source.period": "2024-06-30",
+                "source.t_pub": "2024-07-26T07:46:16-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BMY",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.07,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.07,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-06-30",
+                "evidence.quote": "Non-GAAP EPS was $2.07",
+                "evidence.recommendation": null,
+                "expectation.entity": "BMY",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-06-30",
+                "expectation.vintage": "2024-06-20",
+                "expectation.visible_at": "2024-06-20T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-07-18",
+                "consistency.normalized_value": 2.07,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-06-30",
+                "decision.value_used": 2.07,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-07-26T07:46:16-05:00",
+                "settlement.ticker": "BMY",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": false,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": false,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "STZ",
+                "source.period": "2024-11-30",
+                "source.t_pub": "2025-01-10T08:00:26-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "STZ",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 3.62,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 3.62,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-11-30",
+                "evidence.quote": "comparable EPS of $3.25",
+                "evidence.recommendation": null,
+                "expectation.entity": "STZ",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-11-30",
+                "expectation.vintage": "2024-12-19",
+                "expectation.visible_at": "2024-12-19T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-12-19",
+                "consistency.normalized_value": 3.25,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-11-30",
+                "decision.value_used": 3.25,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-01-10T08:00:26-05:00",
+                "settlement.ticker": "STZ",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BMY",
+                "source.period": "2023-03-31",
+                "source.t_pub": "2023-04-27T07:45:00-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BMY",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.42,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.42,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2023-03-31",
+                "evidence.quote": "Non-GAAP EPS of $2.05",
+                "evidence.recommendation": null,
+                "expectation.entity": "BMY",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2023-03-31",
+                "expectation.vintage": "2023-04-20",
+                "expectation.visible_at": "2023-04-20T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2023-04-20",
+                "consistency.normalized_value": 2.05,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2023-03-31",
+                "decision.value_used": 2.05,
+                "decision.override_reason": null,
+                "decision.decision_time": "2023-04-27T07:45:00-05:00",
+                "settlement.ticker": "BMY",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "stale_expectation",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "prediction": {
+              "fault_type": "future_leakage",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "TGT",
+                "source.period": "2023-04-30",
+                "source.t_pub": "2023-05-17T07:09:49-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "TGT",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.05,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.05,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2023-04-30",
+                "evidence.quote": "First quarter GAAP and Adjusted EPS of $2.05",
+                "evidence.recommendation": null,
+                "expectation.entity": "TGT",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2023-04-30",
+                "expectation.vintage": "2023-03-16",
+                "expectation.visible_at": "2023-03-16T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2023-04-20",
+                "consistency.normalized_value": 2.05,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2023-04-30",
+                "decision.value_used": 2.05,
+                "decision.override_reason": null,
+                "decision.decision_time": "2023-05-17T07:09:49-05:00",
+                "settlement.ticker": "TGT",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": false,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": false,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "stale_expectation",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "prediction": {
+              "fault_type": "future_leakage",
+              "responsible_agent": "expectation_agent",
+              "decisive_step": 2
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "DD",
+                "source.period": "2025-06-30",
+                "source.t_pub": "2025-08-05T06:06:07-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "DD",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.12,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.12,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-06-30",
+                "evidence.quote": "adjusted EPS of $1.12",
+                "evidence.recommendation": null,
+                "expectation.entity": "DD",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-06-30",
+                "expectation.vintage": "2025-06-19",
+                "expectation.visible_at": "2025-06-19T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-07-17",
+                "consistency.normalized_value": 1.12,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-06-30",
+                "decision.value_used": 1.12,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-08-05T06:06:07-05:00",
+                "settlement.ticker": "DD",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": false,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": false,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "CAH",
+                "source.period": "2025-09-30",
+                "source.t_pub": "2025-10-30T06:52:52-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "CAH",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.92,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.92,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-09-30",
+                "evidence.quote": "non-GAAP diluted EPS increased 36% to $2.55",
+                "evidence.recommendation": null,
+                "expectation.entity": "CAH",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-09-30",
+                "expectation.vintage": "2025-10-16",
+                "expectation.visible_at": "2025-10-16T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-10-16",
+                "consistency.normalized_value": 2.55,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-09-30",
+                "decision.value_used": 2.55,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-10-30T06:52:52-05:00",
+                "settlement.ticker": "CAH",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "valid": true,
+      "rule_set": {
+        "version": "faab-rule-dsl-1.0",
+        "rules": [
+          {
+            "rule_id": "R01",
+            "priority": 10,
+            "fault_type": "quote_mismatch",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "The evidence quote does not contain the raw value number",
+            "condition": {
+              "op": "any",
+              "args": [
+                {
+                  "op": "number_not_in_quote"
+                },
+                {
+                  "op": "number_in_other_span"
+                }
+              ]
+            }
+          },
+          {
+            "rule_id": "R02",
+            "priority": 20,
+            "fault_type": "role_violation",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence agent provided a recommendation when it should not",
+            "condition": {
+              "op": "not_empty",
+              "value": {
+                "path": "evidence.recommendation"
+              }
+            }
+          },
+          {
+            "rule_id": "R03",
+            "priority": 30,
+            "fault_type": "future_leakage",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation visible_at is after decision time",
+            "condition": {
+              "op": "gt_time",
+              "left": {
+                "path": "expectation.visible_at"
+              },
+              "right": {
+                "path": "decision.decision_time"
+              }
+            }
+          },
+          {
+            "rule_id": "R04",
+            "priority": 40,
+            "fault_type": "definition_conflict",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation definition does not match evidence definition",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.definition"
+              },
+              "right": {
+                "path": "evidence.definition"
+              }
+            }
+          },
+          {
+            "rule_id": "R05",
+            "priority": 50,
+            "fault_type": "basis_conflict",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation basis does not match evidence basis",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.basis"
+              },
+              "right": {
+                "path": "evidence.basis"
+              }
+            }
+          },
+          {
+            "rule_id": "R06",
+            "priority": 60,
+            "fault_type": "wrong_window",
+            "responsible_agent": "settlement_agent",
+            "decisive_step": 5,
+            "description": "Settlement horizon_td does not match source control_horizon_td",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "settlement.horizon_td"
+              },
+              "right": {
+                "path": "source.control_horizon_td"
+              }
+            }
+          },
+          {
+            "rule_id": "R07",
+            "priority": 70,
+            "fault_type": "missing_handoff",
+            "responsible_agent": "decision_agent",
+            "decisive_step": 4,
+            "description": "Consistency hash is not in decision qualification_refs",
+            "condition": {
+              "op": "not_list_contains",
+              "container": {
+                "path": "decision.qualification_refs"
+              },
+              "value": {
+                "path": "consistency.hash"
+              }
+            }
+          },
+          {
+            "rule_id": "R08",
+            "priority": 80,
+            "fault_type": "unit_scaling",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence unit_multiplier is not 1.0",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "evidence.unit_multiplier"
+              },
+              "right": {
+                "const": 1.0
+              }
+            }
+          },
+          {
+            "rule_id": "R09",
+            "priority": 90,
+            "fault_type": "entity_confusion",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence entity does not match source ticker",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "evidence.entity"
+              },
+              "right": {
+                "path": "source.ticker"
+              }
+            }
+          },
+          {
+            "rule_id": "R10",
+            "priority": 100,
+            "fault_type": "fabricated_value",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence raw_value does not appear in the quote",
+            "condition": {
+              "op": "number_not_in_quote"
+            }
+          },
+          {
+            "rule_id": "R11",
+            "priority": 110,
+            "fault_type": "period_mismatch",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation period does not match evidence period",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.period"
+              },
+              "right": {
+                "path": "evidence.period"
+              }
+            }
+          },
+          {
+            "rule_id": "R12",
+            "priority": 120,
+            "fault_type": "stale_expectation",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation vintage is not the latest eligible vintage",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.vintage"
+              },
+              "right": {
+                "path": "expectation.latest_eligible_vintage"
+              }
+            }
+          },
+          {
+            "rule_id": "R13",
+            "priority": 130,
+            "fault_type": "silent_overwrite",
+            "responsible_agent": "decision_agent",
+            "decisive_step": 4,
+            "description": "Decision value_used does not match consistency normalized_value",
+            "condition": {
+              "op": "numeric_not_close",
+              "left": {
+                "path": "decision.value_used"
+              },
+              "right": {
+                "path": "consistency.normalized_value"
+              }
+            }
+          },
+          {
+            "rule_id": "R14",
+            "priority": 140,
+            "fault_type": "wrong_security",
+            "responsible_agent": "settlement_agent",
+            "decisive_step": 5,
+            "description": "Settlement ticker does not match source ticker",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "settlement.ticker"
+              },
+              "right": {
+                "path": "source.ticker"
+              }
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "split": "dev",
+        "n": 200,
+        "n_clean": 60,
+        "n_fault": 140,
+        "clean_fpr": 0.0,
+        "fault_detection_recall": 1.0,
+        "root_cause_accuracy": 0.9285714285714286,
+        "root_cause_macro_f1": 0.9047619047619048,
+        "agent_attribution_accuracy": 1.0,
+        "decisive_step_accuracy": 1.0,
+        "joint_agent_step_accuracy": 1.0,
+        "materiality_weighted_recall": 1.0,
+        "unresolved_rate": 0.0,
+        "verdict_counts": {
+          "reject": 140,
+          "pass": 60
+        },
+        "per_fault": {
+          "fabricated_value": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 0.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "quote_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "unit_scaling": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "basis_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "period_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "entity_confusion": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "stale_expectation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "future_leakage": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "definition_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "missing_handoff": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "role_violation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "silent_overwrite": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_security": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_window": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          }
+        }
+      },
+      "feedback": {
+        "n_errors_shown": 10,
+        "errors": [
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "CMS",
+                "source.period": "2024-03-31",
+                "source.t_pub": "2024-04-25T06:37:34-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "CMS",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.34,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.34,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-03-31",
+                "evidence.quote": "adjusted earnings per share for the first quarter were $0.97",
+                "evidence.recommendation": null,
+                "expectation.entity": "CMS",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-03-31",
+                "expectation.vintage": "2024-04-18",
+                "expectation.visible_at": "2024-04-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-04-18",
+                "consistency.normalized_value": 0.97,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-03-31",
+                "decision.value_used": 0.97,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-04-25T06:37:34-05:00",
+                "settlement.ticker": "CMS",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BMY",
+                "source.period": "2023-12-31",
+                "source.t_pub": "2024-02-02T07:46:16-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BMY",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.07,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.07,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2023-12-31",
+                "evidence.quote": "Non-GAAP EPS of $1.70",
+                "evidence.recommendation": null,
+                "expectation.entity": "BMY",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2023-12-31",
+                "expectation.vintage": "2024-01-18",
+                "expectation.visible_at": "2024-01-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-01-18",
+                "consistency.normalized_value": 1.7,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2023-12-31",
+                "decision.value_used": 1.7,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-02-02T07:46:16-05:00",
+                "settlement.ticker": "BMY",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "JNJ",
+                "source.period": "2025-03-31",
+                "source.t_pub": "2025-04-15T08:14:19-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "JNJ",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 3.14,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 3.14,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-03-31",
+                "evidence.quote": "adjusted EPS increased to $2.77",
+                "evidence.recommendation": null,
+                "expectation.entity": "JNJ",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-03-31",
+                "expectation.vintage": "2025-03-20",
+                "expectation.visible_at": "2025-03-20T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-03-20",
+                "consistency.normalized_value": 2.77,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-03-31",
+                "decision.value_used": 2.77,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-04-15T08:14:19-05:00",
+                "settlement.ticker": "JNJ",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "WMT",
+                "source.period": "2024-10-31",
+                "source.t_pub": "2024-11-19T06:59:42-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "WMT",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 0.95,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 0.95,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-10-31",
+                "evidence.quote": "Adjusted EPS of $0.58",
+                "evidence.recommendation": null,
+                "expectation.entity": "WMT",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-10-31",
+                "expectation.vintage": "2024-11-14",
+                "expectation.visible_at": "2024-11-14T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-11-14",
+                "consistency.normalized_value": 0.58,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-10-31",
+                "decision.value_used": 0.58,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-11-19T06:59:42-05:00",
+                "settlement.ticker": "WMT",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BMY",
+                "source.period": "2024-06-30",
+                "source.t_pub": "2024-07-26T07:46:16-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BMY",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.44,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.44,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-06-30",
+                "evidence.quote": "Non-GAAP EPS was $2.07",
+                "evidence.recommendation": null,
+                "expectation.entity": "BMY",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-06-30",
+                "expectation.vintage": "2024-07-18",
+                "expectation.visible_at": "2024-07-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-07-18",
+                "consistency.normalized_value": 2.07,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-06-30",
+                "decision.value_used": 2.07,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-07-26T07:46:16-05:00",
+                "settlement.ticker": "BMY",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "MO",
+                "source.period": "2024-06-30",
+                "source.t_pub": "2024-07-31T07:02:01-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "MO",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.68,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.68,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-06-30",
+                "evidence.quote": "Adjusted diluted EPS was unchanged at $1.31",
+                "evidence.recommendation": null,
+                "expectation.entity": "MO",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-06-30",
+                "expectation.vintage": "2024-07-18",
+                "expectation.visible_at": "2024-07-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-07-18",
+                "consistency.normalized_value": 1.31,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-06-30",
+                "decision.value_used": 1.31,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-07-31T07:02:01-05:00",
+                "settlement.ticker": "MO",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "OTIS",
+                "source.period": "2025-06-30",
+                "source.t_pub": "2025-07-23T06:12:50-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "OTIS",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.42,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.42,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-06-30",
+                "evidence.quote": "adjusted EPS decreased 1% to $1.05",
+                "evidence.recommendation": null,
+                "expectation.entity": "OTIS",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-06-30",
+                "expectation.vintage": "2025-07-17",
+                "expectation.visible_at": "2025-07-17T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-07-17",
+                "consistency.normalized_value": 1.05,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-06-30",
+                "decision.value_used": 1.05,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-07-23T06:12:50-05:00",
+                "settlement.ticker": "OTIS",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "STZ",
+                "source.period": "2024-11-30",
+                "source.t_pub": "2025-01-10T08:00:26-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "STZ",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 3.62,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 3.62,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-11-30",
+                "evidence.quote": "comparable EPS of $3.25",
+                "evidence.recommendation": null,
+                "expectation.entity": "STZ",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-11-30",
+                "expectation.vintage": "2024-12-19",
+                "expectation.visible_at": "2024-12-19T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-12-19",
+                "consistency.normalized_value": 3.25,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-11-30",
+                "decision.value_used": 3.25,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-01-10T08:00:26-05:00",
+                "settlement.ticker": "STZ",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BMY",
+                "source.period": "2023-03-31",
+                "source.t_pub": "2023-04-27T07:45:00-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BMY",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.42,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.42,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2023-03-31",
+                "evidence.quote": "Non-GAAP EPS of $2.05",
+                "evidence.recommendation": null,
+                "expectation.entity": "BMY",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2023-03-31",
+                "expectation.vintage": "2023-04-20",
+                "expectation.visible_at": "2023-04-20T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2023-04-20",
+                "consistency.normalized_value": 2.05,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2023-03-31",
+                "decision.value_used": 2.05,
+                "decision.override_reason": null,
+                "decision.decision_time": "2023-04-27T07:45:00-05:00",
+                "settlement.ticker": "BMY",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "CAH",
+                "source.period": "2025-09-30",
+                "source.t_pub": "2025-10-30T06:52:52-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "CAH",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.92,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.92,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-09-30",
+                "evidence.quote": "non-GAAP diluted EPS increased 36% to $2.55",
+                "evidence.recommendation": null,
+                "expectation.entity": "CAH",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-09-30",
+                "expectation.vintage": "2025-10-16",
+                "expectation.visible_at": "2025-10-16T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-10-16",
+                "consistency.normalized_value": 2.55,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-09-30",
+                "decision.value_used": 2.55,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-10-30T06:52:52-05:00",
+                "settlement.ticker": "CAH",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "valid": true,
+      "rule_set": {
+        "version": "faab-rule-dsl-1.0",
+        "rules": [
+          {
+            "rule_id": "R01",
+            "priority": 10,
+            "fault_type": "quote_mismatch",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "The evidence quote does not contain the raw value number",
+            "condition": {
+              "op": "any",
+              "args": [
+                {
+                  "op": "number_not_in_quote"
+                },
+                {
+                  "op": "number_in_other_span"
+                }
+              ]
+            }
+          },
+          {
+            "rule_id": "R02",
+            "priority": 20,
+            "fault_type": "role_violation",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence agent provided a recommendation when it should not",
+            "condition": {
+              "op": "not_empty",
+              "value": {
+                "path": "evidence.recommendation"
+              }
+            }
+          },
+          {
+            "rule_id": "R03",
+            "priority": 30,
+            "fault_type": "future_leakage",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation visible_at is after decision time",
+            "condition": {
+              "op": "gt_time",
+              "left": {
+                "path": "expectation.visible_at"
+              },
+              "right": {
+                "path": "decision.decision_time"
+              }
+            }
+          },
+          {
+            "rule_id": "R04",
+            "priority": 40,
+            "fault_type": "definition_conflict",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation definition does not match evidence definition",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.definition"
+              },
+              "right": {
+                "path": "evidence.definition"
+              }
+            }
+          },
+          {
+            "rule_id": "R05",
+            "priority": 50,
+            "fault_type": "basis_conflict",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation basis does not match evidence basis",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.basis"
+              },
+              "right": {
+                "path": "evidence.basis"
+              }
+            }
+          },
+          {
+            "rule_id": "R06",
+            "priority": 60,
+            "fault_type": "wrong_window",
+            "responsible_agent": "settlement_agent",
+            "decisive_step": 5,
+            "description": "Settlement horizon_td does not match source control_horizon_td",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "settlement.horizon_td"
+              },
+              "right": {
+                "path": "source.control_horizon_td"
+              }
+            }
+          },
+          {
+            "rule_id": "R07",
+            "priority": 70,
+            "fault_type": "missing_handoff",
+            "responsible_agent": "decision_agent",
+            "decisive_step": 4,
+            "description": "Consistency hash is not in decision qualification_refs",
+            "condition": {
+              "op": "not_list_contains",
+              "container": {
+                "path": "decision.qualification_refs"
+              },
+              "value": {
+                "path": "consistency.hash"
+              }
+            }
+          },
+          {
+            "rule_id": "R08",
+            "priority": 80,
+            "fault_type": "unit_scaling",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence unit_multiplier is not 1.0",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "evidence.unit_multiplier"
+              },
+              "right": {
+                "const": 1.0
+              }
+            }
+          },
+          {
+            "rule_id": "R09",
+            "priority": 90,
+            "fault_type": "entity_confusion",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence entity does not match source ticker",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "evidence.entity"
+              },
+              "right": {
+                "path": "source.ticker"
+              }
+            }
+          },
+          {
+            "rule_id": "R10",
+            "priority": 100,
+            "fault_type": "fabricated_value",
+            "responsible_agent": "evidence_agent",
+            "decisive_step": 1,
+            "description": "Evidence raw_value does not appear in the quote",
+            "condition": {
+              "op": "number_not_in_quote"
+            }
+          },
+          {
+            "rule_id": "R11",
+            "priority": 110,
+            "fault_type": "period_mismatch",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation period does not match evidence period",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.period"
+              },
+              "right": {
+                "path": "evidence.period"
+              }
+            }
+          },
+          {
+            "rule_id": "R12",
+            "priority": 120,
+            "fault_type": "stale_expectation",
+            "responsible_agent": "expectation_agent",
+            "decisive_step": 2,
+            "description": "Expectation vintage is not the latest eligible vintage",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "expectation.vintage"
+              },
+              "right": {
+                "path": "expectation.latest_eligible_vintage"
+              }
+            }
+          },
+          {
+            "rule_id": "R13",
+            "priority": 130,
+            "fault_type": "silent_overwrite",
+            "responsible_agent": "decision_agent",
+            "decisive_step": 4,
+            "description": "Decision value_used does not match consistency normalized_value",
+            "condition": {
+              "op": "numeric_not_close",
+              "left": {
+                "path": "decision.value_used"
+              },
+              "right": {
+                "path": "consistency.normalized_value"
+              }
+            }
+          },
+          {
+            "rule_id": "R14",
+            "priority": 140,
+            "fault_type": "wrong_security",
+            "responsible_agent": "settlement_agent",
+            "decisive_step": 5,
+            "description": "Settlement ticker does not match source ticker",
+            "condition": {
+              "op": "ne",
+              "left": {
+                "path": "settlement.ticker"
+              },
+              "right": {
+                "path": "source.ticker"
+              }
+            }
+          }
+        ]
+      },
+      "metrics": {
+        "split": "dev",
+        "n": 200,
+        "n_clean": 60,
+        "n_fault": 140,
+        "clean_fpr": 0.0,
+        "fault_detection_recall": 1.0,
+        "root_cause_accuracy": 0.9285714285714286,
+        "root_cause_macro_f1": 0.9047619047619048,
+        "agent_attribution_accuracy": 1.0,
+        "decisive_step_accuracy": 1.0,
+        "joint_agent_step_accuracy": 1.0,
+        "materiality_weighted_recall": 1.0,
+        "unresolved_rate": 0.0,
+        "verdict_counts": {
+          "reject": 140,
+          "pass": 60
+        },
+        "per_fault": {
+          "fabricated_value": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 0.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "quote_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "unit_scaling": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "basis_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "period_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "entity_confusion": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "stale_expectation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "future_leakage": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "definition_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "missing_handoff": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "role_violation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "silent_overwrite": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_security": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_window": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          }
+        }
+      },
+      "feedback": {
+        "n_errors_shown": 10,
+        "errors": [
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "CMS",
+                "source.period": "2024-03-31",
+                "source.t_pub": "2024-04-25T06:37:34-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "CMS",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.34,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.34,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-03-31",
+                "evidence.quote": "adjusted earnings per share for the first quarter were $0.97",
+                "evidence.recommendation": null,
+                "expectation.entity": "CMS",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-03-31",
+                "expectation.vintage": "2024-04-18",
+                "expectation.visible_at": "2024-04-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-04-18",
+                "consistency.normalized_value": 0.97,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-03-31",
+                "decision.value_used": 0.97,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-04-25T06:37:34-05:00",
+                "settlement.ticker": "CMS",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BMY",
+                "source.period": "2023-12-31",
+                "source.t_pub": "2024-02-02T07:46:16-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BMY",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.07,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.07,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2023-12-31",
+                "evidence.quote": "Non-GAAP EPS of $1.70",
+                "evidence.recommendation": null,
+                "expectation.entity": "BMY",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2023-12-31",
+                "expectation.vintage": "2024-01-18",
+                "expectation.visible_at": "2024-01-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-01-18",
+                "consistency.normalized_value": 1.7,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2023-12-31",
+                "decision.value_used": 1.7,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-02-02T07:46:16-05:00",
+                "settlement.ticker": "BMY",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "JNJ",
+                "source.period": "2025-03-31",
+                "source.t_pub": "2025-04-15T08:14:19-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "JNJ",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 3.14,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 3.14,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-03-31",
+                "evidence.quote": "adjusted EPS increased to $2.77",
+                "evidence.recommendation": null,
+                "expectation.entity": "JNJ",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-03-31",
+                "expectation.vintage": "2025-03-20",
+                "expectation.visible_at": "2025-03-20T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-03-20",
+                "consistency.normalized_value": 2.77,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-03-31",
+                "decision.value_used": 2.77,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-04-15T08:14:19-05:00",
+                "settlement.ticker": "JNJ",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "WMT",
+                "source.period": "2024-10-31",
+                "source.t_pub": "2024-11-19T06:59:42-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "WMT",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 0.95,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 0.95,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-10-31",
+                "evidence.quote": "Adjusted EPS of $0.58",
+                "evidence.recommendation": null,
+                "expectation.entity": "WMT",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-10-31",
+                "expectation.vintage": "2024-11-14",
+                "expectation.visible_at": "2024-11-14T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-11-14",
+                "consistency.normalized_value": 0.58,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-10-31",
+                "decision.value_used": 0.58,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-11-19T06:59:42-05:00",
+                "settlement.ticker": "WMT",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BMY",
+                "source.period": "2024-06-30",
+                "source.t_pub": "2024-07-26T07:46:16-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BMY",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.44,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.44,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-06-30",
+                "evidence.quote": "Non-GAAP EPS was $2.07",
+                "evidence.recommendation": null,
+                "expectation.entity": "BMY",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-06-30",
+                "expectation.vintage": "2024-07-18",
+                "expectation.visible_at": "2024-07-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-07-18",
+                "consistency.normalized_value": 2.07,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-06-30",
+                "decision.value_used": 2.07,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-07-26T07:46:16-05:00",
+                "settlement.ticker": "BMY",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "MO",
+                "source.period": "2024-06-30",
+                "source.t_pub": "2024-07-31T07:02:01-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "MO",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.68,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.68,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-06-30",
+                "evidence.quote": "Adjusted diluted EPS was unchanged at $1.31",
+                "evidence.recommendation": null,
+                "expectation.entity": "MO",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-06-30",
+                "expectation.vintage": "2024-07-18",
+                "expectation.visible_at": "2024-07-18T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-07-18",
+                "consistency.normalized_value": 1.31,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-06-30",
+                "decision.value_used": 1.31,
+                "decision.override_reason": null,
+                "decision.decision_time": "2024-07-31T07:02:01-05:00",
+                "settlement.ticker": "MO",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "OTIS",
+                "source.period": "2025-06-30",
+                "source.t_pub": "2025-07-23T06:12:50-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "OTIS",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 1.42,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 1.42,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-06-30",
+                "evidence.quote": "adjusted EPS decreased 1% to $1.05",
+                "evidence.recommendation": null,
+                "expectation.entity": "OTIS",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-06-30",
+                "expectation.vintage": "2025-07-17",
+                "expectation.visible_at": "2025-07-17T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-07-17",
+                "consistency.normalized_value": 1.05,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-06-30",
+                "decision.value_used": 1.05,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-07-23T06:12:50-05:00",
+                "settlement.ticker": "OTIS",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "STZ",
+                "source.period": "2024-11-30",
+                "source.t_pub": "2025-01-10T08:00:26-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "STZ",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 3.62,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 3.62,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2024-11-30",
+                "evidence.quote": "comparable EPS of $3.25",
+                "evidence.recommendation": null,
+                "expectation.entity": "STZ",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2024-11-30",
+                "expectation.vintage": "2024-12-19",
+                "expectation.visible_at": "2024-12-19T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2024-12-19",
+                "consistency.normalized_value": 3.25,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2024-11-30",
+                "decision.value_used": 3.25,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-01-10T08:00:26-05:00",
+                "settlement.ticker": "STZ",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "BMY",
+                "source.period": "2023-03-31",
+                "source.t_pub": "2023-04-27T07:45:00-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "BMY",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.42,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.42,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2023-03-31",
+                "evidence.quote": "Non-GAAP EPS of $2.05",
+                "evidence.recommendation": null,
+                "expectation.entity": "BMY",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2023-03-31",
+                "expectation.vintage": "2023-04-20",
+                "expectation.visible_at": "2023-04-20T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2023-04-20",
+                "consistency.normalized_value": 2.05,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2023-03-31",
+                "decision.value_used": 2.05,
+                "decision.override_reason": null,
+                "decision.decision_time": "2023-04-27T07:45:00-05:00",
+                "settlement.ticker": "BMY",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          },
+          {
+            "truth": {
+              "fault_type": "fabricated_value",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "prediction": {
+              "fault_type": "quote_mismatch",
+              "responsible_agent": "evidence_agent",
+              "decisive_step": 1
+            },
+            "trace": {
+              "fields": {
+                "source.ticker": "CAH",
+                "source.period": "2025-09-30",
+                "source.t_pub": "2025-10-30T06:52:52-05:00",
+                "source.control_horizon_td": 3,
+                "evidence.entity": "CAH",
+                "evidence.definition": "adjusted_diluted_eps",
+                "evidence.raw_value": 2.92,
+                "evidence.unit_multiplier": 1.0,
+                "evidence.normalized_value": 2.92,
+                "evidence.basis": "non_gaap",
+                "evidence.period": "2025-09-30",
+                "evidence.quote": "non-GAAP diluted EPS increased 36% to $2.55",
+                "evidence.recommendation": null,
+                "expectation.entity": "CAH",
+                "expectation.definition": "adjusted_diluted_eps",
+                "expectation.basis": "non_gaap",
+                "expectation.period": "2025-09-30",
+                "expectation.vintage": "2025-10-16",
+                "expectation.visible_at": "2025-10-16T16:00:00-05:00",
+                "expectation.latest_eligible_vintage": "2025-10-16",
+                "consistency.normalized_value": 2.55,
+                "consistency.qualification": "non_gaap:adjusted_diluted_eps:2025-09-30",
+                "decision.value_used": 2.55,
+                "decision.override_reason": null,
+                "decision.decision_time": "2025-10-30T06:52:52-05:00",
+                "settlement.ticker": "CAH",
+                "settlement.horizon_td": 3
+              },
+              "special_operators": {
+                "quote_not_in_document": false,
+                "number_not_in_quote": true,
+                "number_in_other_span": false,
+                "normalization_mismatch": false
+              },
+              "relations": {
+                "evidence.entity == source.ticker": true,
+                "expectation.entity == evidence.entity": true,
+                "expectation.basis == evidence.basis": true,
+                "expectation.period == evidence.period": true,
+                "expectation.definition == evidence.definition": true,
+                "expectation.vintage == expectation.latest_eligible_vintage": true,
+                "expectation.visible_at > decision.decision_time": false,
+                "decision.source_ref == consistency.hash": true,
+                "consistency.hash in decision.qualification_refs": true,
+                "decision.value_used ~= consistency.normalized_value": true,
+                "settlement.ticker == source.ticker": true,
+                "settlement.horizon_td == source.control_horizon_td": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "selected_round": 2,
+  "selected_rule_set": {
+    "version": "faab-rule-dsl-1.0",
+    "rules": [
+      {
+        "rule_id": "R01",
+        "priority": 10,
+        "fault_type": "quote_mismatch",
+        "responsible_agent": "evidence_agent",
+        "decisive_step": 1,
+        "description": "The evidence quote does not contain the raw value number",
+        "condition": {
+          "op": "any",
+          "args": [
+            {
+              "op": "number_not_in_quote"
+            },
+            {
+              "op": "number_in_other_span"
+            }
+          ]
+        }
+      },
+      {
+        "rule_id": "R02",
+        "priority": 20,
+        "fault_type": "role_violation",
+        "responsible_agent": "evidence_agent",
+        "decisive_step": 1,
+        "description": "Evidence agent provided a recommendation when it should not",
+        "condition": {
+          "op": "not_empty",
+          "value": {
+            "path": "evidence.recommendation"
+          }
+        }
+      },
+      {
+        "rule_id": "R03",
+        "priority": 30,
+        "fault_type": "future_leakage",
+        "responsible_agent": "expectation_agent",
+        "decisive_step": 2,
+        "description": "Expectation visible_at is after decision time",
+        "condition": {
+          "op": "gt_time",
+          "left": {
+            "path": "expectation.visible_at"
+          },
+          "right": {
+            "path": "decision.decision_time"
+          }
+        }
+      },
+      {
+        "rule_id": "R04",
+        "priority": 40,
+        "fault_type": "definition_conflict",
+        "responsible_agent": "expectation_agent",
+        "decisive_step": 2,
+        "description": "Expectation definition does not match evidence definition",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "expectation.definition"
+          },
+          "right": {
+            "path": "evidence.definition"
+          }
+        }
+      },
+      {
+        "rule_id": "R05",
+        "priority": 50,
+        "fault_type": "basis_conflict",
+        "responsible_agent": "expectation_agent",
+        "decisive_step": 2,
+        "description": "Expectation basis does not match evidence basis",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "expectation.basis"
+          },
+          "right": {
+            "path": "evidence.basis"
+          }
+        }
+      },
+      {
+        "rule_id": "R06",
+        "priority": 60,
+        "fault_type": "wrong_window",
+        "responsible_agent": "settlement_agent",
+        "decisive_step": 5,
+        "description": "Settlement horizon_td does not match source control_horizon_td",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "settlement.horizon_td"
+          },
+          "right": {
+            "path": "source.control_horizon_td"
+          }
+        }
+      },
+      {
+        "rule_id": "R07",
+        "priority": 70,
+        "fault_type": "missing_handoff",
+        "responsible_agent": "decision_agent",
+        "decisive_step": 4,
+        "description": "Consistency hash is not in decision qualification_refs",
+        "condition": {
+          "op": "not_list_contains",
+          "container": {
+            "path": "decision.qualification_refs"
+          },
+          "value": {
+            "path": "consistency.hash"
+          }
+        }
+      },
+      {
+        "rule_id": "R08",
+        "priority": 80,
+        "fault_type": "unit_scaling",
+        "responsible_agent": "evidence_agent",
+        "decisive_step": 1,
+        "description": "Evidence unit_multiplier is not 1.0",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "evidence.unit_multiplier"
+          },
+          "right": {
+            "const": 1.0
+          }
+        }
+      },
+      {
+        "rule_id": "R09",
+        "priority": 90,
+        "fault_type": "entity_confusion",
+        "responsible_agent": "evidence_agent",
+        "decisive_step": 1,
+        "description": "Evidence entity does not match source ticker",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "evidence.entity"
+          },
+          "right": {
+            "path": "source.ticker"
+          }
+        }
+      },
+      {
+        "rule_id": "R10",
+        "priority": 100,
+        "fault_type": "fabricated_value",
+        "responsible_agent": "evidence_agent",
+        "decisive_step": 1,
+        "description": "Evidence raw_value does not appear in the quote",
+        "condition": {
+          "op": "number_not_in_quote"
+        }
+      },
+      {
+        "rule_id": "R11",
+        "priority": 110,
+        "fault_type": "period_mismatch",
+        "responsible_agent": "expectation_agent",
+        "decisive_step": 2,
+        "description": "Expectation period does not match evidence period",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "expectation.period"
+          },
+          "right": {
+            "path": "evidence.period"
+          }
+        }
+      },
+      {
+        "rule_id": "R12",
+        "priority": 120,
+        "fault_type": "stale_expectation",
+        "responsible_agent": "expectation_agent",
+        "decisive_step": 2,
+        "description": "Expectation vintage is not the latest eligible vintage",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "expectation.vintage"
+          },
+          "right": {
+            "path": "expectation.latest_eligible_vintage"
+          }
+        }
+      },
+      {
+        "rule_id": "R13",
+        "priority": 130,
+        "fault_type": "silent_overwrite",
+        "responsible_agent": "decision_agent",
+        "decisive_step": 4,
+        "description": "Decision value_used does not match consistency normalized_value",
+        "condition": {
+          "op": "numeric_not_close",
+          "left": {
+            "path": "decision.value_used"
+          },
+          "right": {
+            "path": "consistency.normalized_value"
+          }
+        }
+      },
+      {
+        "rule_id": "R14",
+        "priority": 140,
+        "fault_type": "wrong_security",
+        "responsible_agent": "settlement_agent",
+        "decisive_step": 5,
+        "description": "Settlement ticker does not match source ticker",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "settlement.ticker"
+          },
+          "right": {
+            "path": "source.ticker"
+          }
+        }
+      }
+    ]
+  },
+  "development_metrics": {
+    "split": "dev",
+    "n": 200,
+    "n_clean": 60,
+    "n_fault": 140,
+    "clean_fpr": 0.0,
+    "fault_detection_recall": 1.0,
+    "root_cause_accuracy": 0.9285714285714286,
+    "root_cause_macro_f1": 0.9047619047619048,
+    "agent_attribution_accuracy": 1.0,
+    "decisive_step_accuracy": 1.0,
+    "joint_agent_step_accuracy": 1.0,
+    "materiality_weighted_recall": 1.0,
+    "unresolved_rate": 0.0,
+    "verdict_counts": {
+      "reject": 140,
+      "pass": 60
+    },
+    "per_fault": {
+      "fabricated_value": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 0.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "quote_mismatch": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "unit_scaling": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "basis_conflict": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "period_mismatch": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "entity_confusion": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "stale_expectation": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "future_leakage": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "definition_conflict": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "missing_handoff": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "role_violation": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "silent_overwrite": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "wrong_security": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "wrong_window": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      }
+    }
+  }
+}

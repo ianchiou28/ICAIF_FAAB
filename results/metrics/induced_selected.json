@@ -1,0 +1,744 @@
+{
+  "model": "deepseek-chat",
+  "temperature": 0,
+  "seeds": [
+    101,
+    202,
+    303
+  ],
+  "selection_policy": "development root macro-F1, then clean retention, then joint agent-step",
+  "selected_seed": 101,
+  "selected_rule_set": {
+    "version": "faab-rule-dsl-1.0",
+    "rules": [
+      {
+        "rule_id": "R01",
+        "priority": 10,
+        "fault_type": "quote_mismatch",
+        "responsible_agent": "evidence_agent",
+        "decisive_step": 1,
+        "description": "The evidence quote does not contain the raw value number",
+        "condition": {
+          "op": "any",
+          "args": [
+            {
+              "op": "number_not_in_quote"
+            },
+            {
+              "op": "number_in_other_span"
+            }
+          ]
+        }
+      },
+      {
+        "rule_id": "R02",
+        "priority": 20,
+        "fault_type": "role_violation",
+        "responsible_agent": "evidence_agent",
+        "decisive_step": 1,
+        "description": "Evidence agent provided a recommendation when it should not",
+        "condition": {
+          "op": "not_empty",
+          "value": {
+            "path": "evidence.recommendation"
+          }
+        }
+      },
+      {
+        "rule_id": "R03",
+        "priority": 30,
+        "fault_type": "future_leakage",
+        "responsible_agent": "expectation_agent",
+        "decisive_step": 2,
+        "description": "Expectation visible_at is after decision time",
+        "condition": {
+          "op": "gt_time",
+          "left": {
+            "path": "expectation.visible_at"
+          },
+          "right": {
+            "path": "decision.decision_time"
+          }
+        }
+      },
+      {
+        "rule_id": "R04",
+        "priority": 40,
+        "fault_type": "definition_conflict",
+        "responsible_agent": "expectation_agent",
+        "decisive_step": 2,
+        "description": "Expectation definition does not match evidence definition",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "expectation.definition"
+          },
+          "right": {
+            "path": "evidence.definition"
+          }
+        }
+      },
+      {
+        "rule_id": "R05",
+        "priority": 50,
+        "fault_type": "basis_conflict",
+        "responsible_agent": "expectation_agent",
+        "decisive_step": 2,
+        "description": "Expectation basis does not match evidence basis",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "expectation.basis"
+          },
+          "right": {
+            "path": "evidence.basis"
+          }
+        }
+      },
+      {
+        "rule_id": "R06",
+        "priority": 60,
+        "fault_type": "wrong_window",
+        "responsible_agent": "settlement_agent",
+        "decisive_step": 5,
+        "description": "Settlement horizon_td does not match source control_horizon_td",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "settlement.horizon_td"
+          },
+          "right": {
+            "path": "source.control_horizon_td"
+          }
+        }
+      },
+      {
+        "rule_id": "R07",
+        "priority": 70,
+        "fault_type": "missing_handoff",
+        "responsible_agent": "decision_agent",
+        "decisive_step": 4,
+        "description": "Consistency hash is not in decision qualification_refs",
+        "condition": {
+          "op": "not_list_contains",
+          "container": {
+            "path": "decision.qualification_refs"
+          },
+          "value": {
+            "path": "consistency.hash"
+          }
+        }
+      },
+      {
+        "rule_id": "R08",
+        "priority": 80,
+        "fault_type": "unit_scaling",
+        "responsible_agent": "evidence_agent",
+        "decisive_step": 1,
+        "description": "Evidence unit_multiplier is not 1.0",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "evidence.unit_multiplier"
+          },
+          "right": {
+            "const": 1.0
+          }
+        }
+      },
+      {
+        "rule_id": "R09",
+        "priority": 90,
+        "fault_type": "entity_confusion",
+        "responsible_agent": "evidence_agent",
+        "decisive_step": 1,
+        "description": "Evidence entity does not match source ticker",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "evidence.entity"
+          },
+          "right": {
+            "path": "source.ticker"
+          }
+        }
+      },
+      {
+        "rule_id": "R10",
+        "priority": 100,
+        "fault_type": "fabricated_value",
+        "responsible_agent": "evidence_agent",
+        "decisive_step": 1,
+        "description": "Evidence raw_value does not appear in the quote",
+        "condition": {
+          "op": "number_not_in_quote"
+        }
+      },
+      {
+        "rule_id": "R11",
+        "priority": 110,
+        "fault_type": "period_mismatch",
+        "responsible_agent": "expectation_agent",
+        "decisive_step": 2,
+        "description": "Expectation period does not match evidence period",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "expectation.period"
+          },
+          "right": {
+            "path": "evidence.period"
+          }
+        }
+      },
+      {
+        "rule_id": "R12",
+        "priority": 120,
+        "fault_type": "stale_expectation",
+        "responsible_agent": "expectation_agent",
+        "decisive_step": 2,
+        "description": "Expectation vintage is not the latest eligible vintage",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "expectation.vintage"
+          },
+          "right": {
+            "path": "expectation.latest_eligible_vintage"
+          }
+        }
+      },
+      {
+        "rule_id": "R13",
+        "priority": 130,
+        "fault_type": "silent_overwrite",
+        "responsible_agent": "decision_agent",
+        "decisive_step": 4,
+        "description": "Decision value_used does not match consistency normalized_value",
+        "condition": {
+          "op": "numeric_not_close",
+          "left": {
+            "path": "decision.value_used"
+          },
+          "right": {
+            "path": "consistency.normalized_value"
+          }
+        }
+      },
+      {
+        "rule_id": "R14",
+        "priority": 140,
+        "fault_type": "wrong_security",
+        "responsible_agent": "settlement_agent",
+        "decisive_step": 5,
+        "description": "Settlement ticker does not match source ticker",
+        "condition": {
+          "op": "ne",
+          "left": {
+            "path": "settlement.ticker"
+          },
+          "right": {
+            "path": "source.ticker"
+          }
+        }
+      }
+    ]
+  },
+  "development_metrics": {
+    "split": "dev",
+    "n": 200,
+    "n_clean": 60,
+    "n_fault": 140,
+    "clean_fpr": 0.0,
+    "fault_detection_recall": 1.0,
+    "root_cause_accuracy": 0.9285714285714286,
+    "root_cause_macro_f1": 0.9047619047619048,
+    "agent_attribution_accuracy": 1.0,
+    "decisive_step_accuracy": 1.0,
+    "joint_agent_step_accuracy": 1.0,
+    "materiality_weighted_recall": 1.0,
+    "unresolved_rate": 0.0,
+    "verdict_counts": {
+      "reject": 140,
+      "pass": 60
+    },
+    "per_fault": {
+      "fabricated_value": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 0.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "quote_mismatch": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "unit_scaling": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "basis_conflict": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "period_mismatch": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "entity_confusion": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "stale_expectation": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "future_leakage": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "definition_conflict": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "missing_handoff": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "role_violation": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "silent_overwrite": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "wrong_security": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      },
+      "wrong_window": {
+        "n": 10,
+        "detection_recall": 1.0,
+        "root_cause_accuracy": 1.0,
+        "agent_accuracy": 1.0,
+        "step_accuracy": 1.0
+      }
+    }
+  },
+  "api_usage": {
+    "successful_calls": 15,
+    "failed_calls": 1,
+    "prompt_tokens": 264443,
+    "completion_tokens": 23189,
+    "total_tokens": 287632
+  },
+  "runs": [
+    {
+      "seed": 101,
+      "selected_round": 2,
+      "development_metrics": {
+        "split": "dev",
+        "n": 200,
+        "n_clean": 60,
+        "n_fault": 140,
+        "clean_fpr": 0.0,
+        "fault_detection_recall": 1.0,
+        "root_cause_accuracy": 0.9285714285714286,
+        "root_cause_macro_f1": 0.9047619047619048,
+        "agent_attribution_accuracy": 1.0,
+        "decisive_step_accuracy": 1.0,
+        "joint_agent_step_accuracy": 1.0,
+        "materiality_weighted_recall": 1.0,
+        "unresolved_rate": 0.0,
+        "verdict_counts": {
+          "reject": 140,
+          "pass": 60
+        },
+        "per_fault": {
+          "fabricated_value": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 0.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "quote_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "unit_scaling": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "basis_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "period_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "entity_confusion": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "stale_expectation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "future_leakage": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "definition_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "missing_handoff": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "role_violation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "silent_overwrite": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_security": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_window": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          }
+        }
+      }
+    },
+    {
+      "seed": 202,
+      "selected_round": 1,
+      "development_metrics": {
+        "split": "dev",
+        "n": 200,
+        "n_clean": 60,
+        "n_fault": 140,
+        "clean_fpr": 0.0,
+        "fault_detection_recall": 1.0,
+        "root_cause_accuracy": 0.8571428571428571,
+        "root_cause_macro_f1": 0.8095238095238095,
+        "agent_attribution_accuracy": 1.0,
+        "decisive_step_accuracy": 1.0,
+        "joint_agent_step_accuracy": 1.0,
+        "materiality_weighted_recall": 1.0,
+        "unresolved_rate": 0.0,
+        "verdict_counts": {
+          "reject": 140,
+          "pass": 60
+        },
+        "per_fault": {
+          "fabricated_value": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "quote_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 0.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "unit_scaling": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "basis_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "period_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "entity_confusion": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "stale_expectation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "future_leakage": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 0.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "definition_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "missing_handoff": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "role_violation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "silent_overwrite": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_security": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_window": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          }
+        }
+      }
+    },
+    {
+      "seed": 303,
+      "selected_round": 1,
+      "development_metrics": {
+        "split": "dev",
+        "n": 200,
+        "n_clean": 60,
+        "n_fault": 140,
+        "clean_fpr": 0.0,
+        "fault_detection_recall": 1.0,
+        "root_cause_accuracy": 0.8571428571428571,
+        "root_cause_macro_f1": 0.8095238095238095,
+        "agent_attribution_accuracy": 1.0,
+        "decisive_step_accuracy": 1.0,
+        "joint_agent_step_accuracy": 1.0,
+        "materiality_weighted_recall": 1.0,
+        "unresolved_rate": 0.0,
+        "verdict_counts": {
+          "reject": 140,
+          "pass": 60
+        },
+        "per_fault": {
+          "fabricated_value": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 0.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "quote_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "unit_scaling": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "basis_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "period_mismatch": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "entity_confusion": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "stale_expectation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "future_leakage": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 0.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "definition_conflict": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "missing_handoff": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "role_violation": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "silent_overwrite": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_security": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          },
+          "wrong_window": {
+            "n": 10,
+            "detection_recall": 1.0,
+            "root_cause_accuracy": 1.0,
+            "agent_accuracy": 1.0,
+            "step_accuracy": 1.0
+          }
+        }
+      }
+    }
+  ]
+}

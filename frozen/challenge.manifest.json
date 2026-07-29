@@ -1,0 +1,33 @@
+{
+  "version": "faab-rule-induction-challenge-1.0",
+  "seed": 20260727,
+  "n_cases": 200,
+  "n_clean": 60,
+  "n_per_fault": 10,
+  "n_sources": 60,
+  "source_overlap_with_faab_v1_4": 0,
+  "base_benchmark_sha256": "b54fad29993e408178564b01dc6ea8006e17d5d8df5d59c86ae63734ec5864a6",
+  "db_sha256": "1a9e7f8be8beb52c284f57bf30b4e2922a802cbe2ec0c17406544bba2167e9e1",
+  "fault_types": [
+    "fabricated_value",
+    "quote_mismatch",
+    "unit_scaling",
+    "basis_conflict",
+    "period_mismatch",
+    "entity_confusion",
+    "stale_expectation",
+    "future_leakage",
+    "definition_conflict",
+    "missing_handoff",
+    "role_violation",
+    "silent_overwrite",
+    "wrong_security",
+    "wrong_window"
+  ],
+  "variant_policy": {
+    "new_sources": true,
+    "new_numeric_perturbations": true,
+    "missing_handoff": "decision.source_ref removed instead of qualification_refs"
+  },
+  "sha256": "c8cd0744f15b9ba907d6f472691741fb874b4214d64de7afc7953697d459566c"
+}

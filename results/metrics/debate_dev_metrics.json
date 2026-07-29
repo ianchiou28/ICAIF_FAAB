@@ -1,0 +1,130 @@
+{
+  "split": "dev",
+  "n": 200,
+  "n_clean": 60,
+  "n_fault": 140,
+  "clean_fpr": 0.06666666666666667,
+  "fault_detection_recall": 0.5928571428571429,
+  "root_cause_accuracy": 0.4642857142857143,
+  "root_cause_macro_f1": 0.4870599755053536,
+  "agent_attribution_accuracy": 0.5357142857142857,
+  "decisive_step_accuracy": 0.5357142857142857,
+  "joint_agent_step_accuracy": 0.5357142857142857,
+  "materiality_weighted_recall": 0.6297297297297297,
+  "unresolved_rate": 0.0,
+  "verdict_counts": {
+    "reject": 85,
+    "pass": 113,
+    "qualified": 2
+  },
+  "per_fault": {
+    "fabricated_value": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 1.0,
+      "agent_accuracy": 1.0,
+      "step_accuracy": 1.0
+    },
+    "quote_mismatch": {
+      "n": 10,
+      "detection_recall": 0.1,
+      "root_cause_accuracy": 0.1,
+      "agent_accuracy": 0.1,
+      "step_accuracy": 0.1
+    },
+    "unit_scaling": {
+      "n": 10,
+      "detection_recall": 0.0,
+      "root_cause_accuracy": 0.0,
+      "agent_accuracy": 0.0,
+      "step_accuracy": 0.0
+    },
+    "basis_conflict": {
+      "n": 10,
+      "detection_recall": 0.6,
+      "root_cause_accuracy": 0.6,
+      "agent_accuracy": 0.4,
+      "step_accuracy": 0.4
+    },
+    "period_mismatch": {
+      "n": 10,
+      "detection_recall": 0.2,
+      "root_cause_accuracy": 0.2,
+      "agent_accuracy": 0.0,
+      "step_accuracy": 0.0
+    },
+    "entity_confusion": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 1.0,
+      "agent_accuracy": 1.0,
+      "step_accuracy": 1.0
+    },
+    "stale_expectation": {
+      "n": 10,
+      "detection_recall": 0.5,
+      "root_cause_accuracy": 0.5,
+      "agent_accuracy": 0.5,
+      "step_accuracy": 0.5
+    },
+    "future_leakage": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 0.6,
+      "agent_accuracy": 0.9,
+      "step_accuracy": 0.9
+    },
+    "definition_conflict": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 1.0,
+      "agent_accuracy": 1.0,
+      "step_accuracy": 1.0
+    },
+    "missing_handoff": {
+      "n": 10,
+      "detection_recall": 0.1,
+      "root_cause_accuracy": 0.0,
+      "agent_accuracy": 0.0,
+      "step_accuracy": 0.0
+    },
+    "role_violation": {
+      "n": 10,
+      "detection_recall": 0.0,
+      "root_cause_accuracy": 0.0,
+      "agent_accuracy": 0.0,
+      "step_accuracy": 0.0
+    },
+    "silent_overwrite": {
+      "n": 10,
+      "detection_recall": 1.0,
+      "root_cause_accuracy": 0.0,
+      "agent_accuracy": 1.0,
+      "step_accuracy": 1.0
+    },
+    "wrong_security": {
+      "n": 10,
+      "detection_recall": 0.9,
+      "root_cause_accuracy": 0.7,
+      "agent_accuracy": 0.8,
+      "step_accuracy": 0.8
+    },
+    "wrong_window": {
+      "n": 10,
+      "detection_recall": 0.9,
+      "root_cause_accuracy": 0.8,
+      "agent_accuracy": 0.8,
+      "step_accuracy": 0.8
+    }
+  },
+  "method": "debate",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "api_calls": 600,
+  "api_requests_including_retries": 602,
+  "api_failures": 0,
+  "prompt_tokens": 966270,
+  "completion_tokens": 89347,
+  "total_tokens": 1055617,
+  "mean_latency_s": 5.250571
+}
