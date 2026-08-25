@@ -1,4 +1,4 @@
-"""FAAB 指标：clean FPR、检测、根因、agent/step 与实质性加权召回。"""
+"""FAAB metrics: clean FPR, detection, root cause, agent/step, materiality-weighted recall."""
 from __future__ import annotations
 
 from collections import Counter, defaultdict
@@ -46,7 +46,7 @@ def evaluate(cases: list[dict[str, Any]], predictions: dict[str, dict[str, Any]]
             "step_accuracy": sum(predictions[c["case_id"]]["decisive_step"] ==
                                  c["oracle"]["decisive_step"] for c in group) / len(group),
         }
-    # Macro root-cause F1 over 14 fault classes（clean none 不进入）。
+    # Macro root-cause F1 over 14 fault classes (clean "none" is excluded).
     f1s = []
     for f in FAULT_SPECS:
         tp_f = sum(c["oracle"]["fault_type"] == f and predictions[c["case_id"]]["fault_type"] == f
@@ -59,8 +59,9 @@ def evaluate(cases: list[dict[str, Any]], predictions: dict[str, dict[str, Any]]
         r = tp_f / (tp_f + fn_f) if tp_f + fn_f else 0.0
         f1s.append(2 * p * r / (p + r) if p + r else 0.0)
     verdicts = Counter(predictions[c["case_id"]]["verdict"] for c in rows)
-    # 责任工位与决定性步骤在本工作流里一一对应，两者不是独立维度。把这件事测出来
-    # 并随指标一起报告，正文只用合并后的 responsibility localization。
+    # Responsible agent and decisive step are in one-to-one correspondence in this
+    # workflow, so they are not independent dimensions. Measure that fact and report it
+    # alongside the metrics; the paper reports only the merged responsibility localization.
     label_pairs = sorted({(c["oracle"]["responsible_agent"], c["oracle"]["decisive_step"])
                           for c in faults})
     bijective = (len({a for a, _ in label_pairs}) == len(label_pairs)
@@ -74,7 +75,7 @@ def evaluate(cases: list[dict[str, Any]], predictions: dict[str, dict[str, Any]]
         "agent_attribution_accuracy": agent / len(faults) if faults else None,
         "decisive_step_accuracy": step / len(faults) if faults else None,
         "joint_agent_step_accuracy": joint / len(faults) if faults else None,
-        # 正文口径：责任定位（agent 与 step 同时正确）。
+        # Paper convention: responsibility localization (agent and step both correct).
         "responsibility_localization_accuracy": joint / len(faults) if faults else None,
         "label_agent_step_pairs": [list(p) for p in label_pairs],
         "agent_step_bijective": bijective,

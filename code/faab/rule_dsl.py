@@ -1,7 +1,8 @@
-"""FAAB 可执行审计规则 DSL。
+"""FAAB executable audit-rule DSL.
 
-LLM 只能在白名单路径和操作符内归纳规则；测试时由本模块确定性执行，
-不允许访问 oracle、case_id、source_id 或任何外部状态。
+An LLM may induce rules only within whitelisted paths and operators; at test time this module
+executes them deterministically, with no access to the oracle, case_id, source_id or any
+external state.
 """
 from __future__ import annotations
 
@@ -72,7 +73,7 @@ ALL_OPS = SCALAR_OPS | UNARY_OPS | SPECIAL_OPS | LOGIC_OPS | LIST_OPS
 
 
 class RuleValidationError(ValueError):
-    """规则集不满足可执行与防泄漏约束。"""
+    """The rule set violates the executability and leakage-prevention constraints."""
 
 
 def resolve_path(public_case: dict[str, Any], path: str) -> Any:
@@ -88,7 +89,7 @@ def resolve_path(public_case: dict[str, Any], path: str) -> Any:
 
 
 def feature_snapshot(public_case: dict[str, Any]) -> dict[str, Any]:
-    """给规则归纳器的固定特征视图；不含任何标签或实例标识符。"""
+    """Fixed feature view handed to the rule inducer; contains no labels or instance identifiers."""
     return {path: resolve_path(public_case, path) for path in PATHS}
 
 
@@ -106,7 +107,7 @@ def _validate_operand(value: Any, location: str) -> None:
         if abs(float(constant)) > 1_000_000_000:
             raise RuleValidationError(f"{location}:numeric_constant_too_large")
         return
-    # 禁止 ticker、日期、case/source ID 等字符串常量进入规则。
+    # Forbid string constants such as tickers, dates and case/source IDs from entering rules.
     raise RuleValidationError(f"{location}:string_constants_forbidden")
 
 
@@ -266,7 +267,7 @@ def evaluate_condition(condition: dict[str, Any], public_case: dict[str, Any]) -
 
 
 class RuleSetAuditor:
-    """冻结规则集的确定性审计器。"""
+    """Deterministic auditor over a frozen rule set."""
 
     name = "rule_set"
 
@@ -302,7 +303,8 @@ def _cmp(op: str, left: str, right: str | float | int) -> dict[str, Any]:
 
 
 def human_rule_set() -> dict[str, Any]:
-    """人工金融控制基线，以同一 DSL 表示，便于与 LLM 归纳规则公平比较。"""
+    """Human financial-control baseline expressed in the same DSL, so it compares fairly
+    against LLM-induced rules."""
     rules = [
         {
             "rule_id": "R01", "priority": 10, "fault_type": "role_violation",

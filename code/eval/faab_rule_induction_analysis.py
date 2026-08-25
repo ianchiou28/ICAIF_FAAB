@@ -1,4 +1,4 @@
-"""FAAB rule-induction challenge 的聚类区间、配对检验和稳定性分析。"""
+"""Clustered intervals, paired tests and stability analysis for the FAAB rule-induction challenge."""
 from __future__ import annotations
 
 import json

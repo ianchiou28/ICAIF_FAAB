@@ -1,4 +1,4 @@
-"""FAAB 的单故障、标签隔离与指标回归测试。"""
+"""Regression tests for FAAB single-fault injection, label isolation and metrics."""
 from __future__ import annotations
 
 import copy
@@ -123,7 +123,7 @@ def test_hybrid_separates_wrong_quote_from_fabricated_value():
     wrong_quote = _inject(base, "quote_mismatch", "BBB")
 
     def should_not_call(*_args):
-        raise AssertionError("确定性 grounding 违规不应调用 LLM")
+        raise AssertionError("a deterministic grounding violation must not call the LLM")
 
     result = HybridAuditor(should_not_call).audit(
         {"trace_id": "opaque", "trace": wrong_quote})
@@ -131,12 +131,13 @@ def test_hybrid_separates_wrong_quote_from_fabricated_value():
 
 
 def test_residual_llm_is_only_reachable_after_a_deterministic_pass():
-    """hybrid = 确定性内核 + 仅在内核放行时的残余复核；故障轨迹上两者必须一致。"""
+    """hybrid = deterministic kernel + residual review only when the kernel passes; on fault
+    traces the two must agree."""
     base = _trace()
     core = RulesRetrievalAuditor()
 
     def must_not_be_called(*_args):
-        raise AssertionError("内核已定罪时不得升级到 LLM")
+        raise AssertionError("must not escalate to the LLM once the kernel has convicted")
 
     hybrid = HybridAuditor(must_not_be_called)
     for fault in FAULT_SPECS:
@@ -208,7 +209,8 @@ def test_rule_dsl_rejects_oracle_path():
 
 
 def test_metrics_report_agent_step_collinearity():
-    """责任工位与决定性步骤在本工作流一一对应；该事实必须被测量并报告。"""
+    """Responsible agent and decisive step are in one-to-one correspondence in this workflow;
+    that fact must be measured and reported."""
     faults = [
         {"case_id": f, "split": "test",
          "oracle": {"fault_type": f, "responsible_agent": spec["agent"],
@@ -243,7 +245,7 @@ def test_tool_runtime_answers_arithmetic_and_time_primitives():
 
 
 def test_tool_retrieval_separates_wrong_citation_from_unsupported_value():
-    """跨 span 检索必须能区分「引文错配」与「数字根本不存在」。"""
+    """Cross-span retrieval must separate a quote mismatch from a value that is absent entirely."""
     runtime = ToolRuntime({"trace": _inject(_trace(), "quote_mismatch", "BBB")})
     hit = runtime.run("find_value_in_document", {"value": 1.25})
     assert hit["n_matching_spans"] >= 1
@@ -256,7 +258,7 @@ def test_tool_retrieval_separates_wrong_citation_from_unsupported_value():
 
 
 def test_tool_runtime_cannot_reach_oracle_or_case_label():
-    """工具只读 public_trace；oracle 与可读 case_id 必须不可达。"""
+    """Tools read public_trace only; the oracle and the readable case_id must be unreachable."""
     case = {"case_id": "future_leakage_007", "trace": _trace(),
             "oracle": {"fault_type": "future_leakage"}}
     runtime = ToolRuntime({"trace": case["trace"]})
@@ -272,7 +274,7 @@ def test_tool_auditor_stops_early_when_model_stops_calling_tools():
             self.parsed_json = None
 
     class _Model:
-        """最小 provider 桩：会话历史只需可追加。"""
+        """Minimal provider stub: the conversation history only needs to be appendable."""
 
         def seed(self, system, user):
             return [system, user]
@@ -306,7 +308,8 @@ def test_tool_auditor_stops_early_when_model_stops_calling_tools():
 
 
 def test_tool_specs_expose_only_primitive_computations():
-    """工具不得直接返回故障判断；名字与描述里不能出现故障类别。"""
+    """Tools must not return fault judgments; no fault class may appear in their names or
+    descriptions."""
     names = {t["function"]["name"] for t in TOOL_SPECS}
     assert names == {"get_field", "compare_numbers", "multiply", "compare_dates",
                      "find_value_in_document", "verify_hash_chain"}

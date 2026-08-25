@@ -1,4 +1,5 @@
-"""从分析 JSON 生成论文表格行，保证正文数字与数据一致（不手抄）。
+"""Generate paper table rows from the analysis JSON so the numbers in the text match the
+data exactly (never transcribed by hand).
 
   python3 eval/faab_analysis.py --split test
   python3 eval/faab_analysis.py --split challenge
@@ -23,8 +24,9 @@ RESULTS = {
     "challenge": ROOT / "data/faab_rule_induction/results",
 }
 
-# 臂名 -> (显示名, 模型列, prompt 版本)。顺序即表格行序。
-# "__p15" 后缀是声明账本推导式后的重跑；无后缀的 LLM 臂是 v1.4。
+# Arm name -> (display name, model column, prompt version). This order is the table row order.
+# The "__p15" suffix marks reruns after the declaration-ledger derivation was added; LLM arms
+# with no suffix are v1.4.
 DISPLAY: list[tuple[str, str, str, str]] = [
     ("rule_only", "Rules", "--", "--"),
     ("local_rule_only", "Rules", "--", "--"),
@@ -64,7 +66,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", choices=sorted(ANALYSIS), default="test")
     parser.add_argument("--prompts", choices=["v1.4", "v1.5", "all"], default="v1.5",
-                        help="按 prompt 版本过滤主表行")
+                        help="filter main-table rows by prompt version")
     args = parser.parse_args()
 
     analysis = json.loads(ANALYSIS[args.split].read_text())

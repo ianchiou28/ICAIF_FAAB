@@ -17,9 +17,10 @@ from matplotlib.patches import Rectangle
 from matplotlib import patheffects
 
 
-# 正文实测用 CMR/CMBX（acmart 缺 libertine 时回退到 Computer Modern）。
-# Latin Modern 是 CM 的 OpenType 后继，形态同源且有完整粗体/斜体；
-# 不走 text.usetex，因为它还需要 dvipng，多一个易碎的外部依赖。
+# The body text measures out as CMR/CMBX (acmart falls back to Computer Modern when libertine
+# is missing). Latin Modern is the OpenType successor to CM, with the same letterforms and a
+# complete bold/italic set. text.usetex is avoided because it would also require dvipng, adding
+# another brittle external dependency.
 LM_DIR = Path.home() / "Library/TinyTeX/texmf-dist/fonts/opentype/public/lm"
 
 
@@ -87,9 +88,11 @@ METRICS_PATTERN = re.compile(
 
 
 def load_analysis() -> dict:
-    """冻结分析 + 后加入的臂（新审计器设计、新模型）逐文件并入。
+    """Merge the frozen analysis with arms added later (new auditor designs, new models), one
+    file at a time.
 
-    并入而不是重跑归纳分析，是为了不动已冻结的规则诱导与选择记录。
+    Merging instead of rerunning the induction analysis keeps the frozen rule-induction and
+    selection records untouched.
     """
     with ANALYSIS.open(encoding="utf-8") as stream:
         data = json.load(stream)
@@ -103,7 +106,7 @@ def load_analysis() -> dict:
             continue
         row = json.loads(path.read_text())
         if row.get("n") != data.get("n_cases", row.get("n")):
-            pass  # 不完整的臂仍然并入，由调用方决定是否使用
+            pass  # Incomplete arms are still merged; the caller decides whether to use them.
         data["point"][arm] = {
             "clean_fpr": row["clean_fpr"],
             "fault_detection_recall": row["fault_detection_recall"],
@@ -121,10 +124,12 @@ def load_analysis() -> dict:
 
 
 def draw_frontier(ax: plt.Axes, point: dict) -> None:
-    """审计前沿：干净误报 vs 根因准确率。臂按可用性动态选取。
+    """Audit frontier: clean false positives vs root-cause accuracy. Arms are selected
+    dynamically by availability.
 
-    强模型把根因准确率推得很高，却同时把干净误报推到 20% 量级，所以横轴不能再按
-    v1.4 的 12% 上限截断——那样会把最重要的对比裁掉。
+    Strong models push root-cause accuracy very high while also pushing clean false positives
+    into the 20% range, so the x-axis can no longer be clipped at the v1.4 limit of 12% -- that
+    would cut off the most important comparison.
     """
     order = [
         ("human_rules", "Human", "#009E73", "s"),
@@ -157,7 +162,7 @@ def draw_frontier(ax: plt.Axes, point: dict) -> None:
     ax.grid(True, color="#D8D8D8", linewidth=0.45)
     ax.set_axisbelow(True)
 
-    # 目标工作区：FPR <= 2% 且 root accuracy >= 90%
+    # Target operating region: FPR <= 2% and root accuracy >= 90%.
     ax.add_patch(Rectangle((x_lo, 90.0), 2.0 - x_lo, y_hi - 90.0, facecolor="#009E73",
                            alpha=0.07, edgecolor="none", zorder=0))
     dashes = (0, (2.6, 1.9))
@@ -175,8 +180,9 @@ def draw_frontier(ax: plt.Axes, point: dict) -> None:
 
 
 def draw_fault_heatmap(ax: plt.Axes, per_fault: dict) -> None:
-    # 人工契约作为参照列，归纳规则是主角，右侧两列是最强的在线对手。
-    # 最强模型的判官与工具版并列：留出 handoff 那一行是 0/10 对 10/10。
+    # Human contracts serve as the reference column, induced rules are the focus, and the two
+    # right-hand columns are the strongest online opponents. The judge and tool variants of the
+    # strongest model sit side by side, which leaves the handoff row reading 0/10 against 10/10.
     methods = [m for m in ("human_rules", "llm_induced_rules",
                            "llm_judge@local-gpt-5.6-terra__p15",
                            "tool_auditor@local-gpt-5.6-terra__p15",
@@ -237,8 +243,9 @@ def draw_stability(ax: plt.Axes, seed_stability: dict) -> None:
         100 * pairwise[f"{selected}_vs_{seeds[2]}"],
     ]
     x = np.arange(len(seeds))
-    # 用点图而非柱状图：柱长编码数值大小，非零起点会夸大差异；
-    # 点图不靠长度编码，因此可以合法地放大到数据所在区间。
+    # Dot plot rather than bars: bar length encodes magnitude, so a non-zero baseline would
+    # exaggerate the differences. A dot plot does not encode by length, so it can legitimately
+    # zoom in on the range the data occupies.
     series = [
         ("Dev", dev, "#0072B2", "o", -0.22),
         ("Challenge", challenge, "#E69F00", "s", 0.0),
@@ -262,7 +269,7 @@ def draw_stability(ax: plt.Axes, seed_stability: dict) -> None:
     ax.set_yticks([70, 75, 80, 85, 90, 95, 100])
     ax.grid(axis="y", color="#D8D8D8", linewidth=0.45)
     ax.set_axisbelow(True)
-    # 图例落在 68--76 的空白带，且用 mode="expand" 强制与 x 轴等宽
+    # Place the legend in the empty 68--76 band, using mode="expand" to force it to the x-axis width.
     ax.legend(
         loc="lower left",
         bbox_to_anchor=(0.0, 0.005, 1.0, 0.06),
@@ -298,7 +305,7 @@ def main() -> None:
             "xtick.labelsize": 5.8,
             "ytick.labelsize": 5.8,
             "axes.linewidth": 0.55,
-            # 数据最大化、墨水最小化：去掉顶/右边框，刻度线内收
+            # Maximize data, minimize ink: drop the top/right spines and turn the ticks inward.
             "axes.spines.top": False,
             "axes.spines.right": False,
             "xtick.direction": "in",
@@ -313,8 +320,8 @@ def main() -> None:
         }
     )
     figure = plt.figure(figsize=(3.34, 2.62), constrained_layout=False)
-    # (a) 与 (c) 取正方形：原来 wspace=0.72 让每条间隙宽达 1.06in，
-    # 远超 (b) 纵轴标签所需，把富余的宽度还给两侧面板。
+    # Make (a) and (c) square: the previous wspace=0.72 made each gap 1.06in wide, far more than
+    # the y-axis labels of (b) need, so the surplus width goes back to the flanking panels.
     grid = figure.add_gridspec(1, 1, left=0.30, right=0.90, bottom=0.20, top=0.92)
     draw_fault_heatmap(figure.add_subplot(grid[0, 0]), data["per_fault"])
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)

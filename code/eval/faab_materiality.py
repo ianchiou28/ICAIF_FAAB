@@ -1,12 +1,16 @@
-"""测量每类故障对已声明标准化超预期的实际影响（确定性，无模型调用）。
+"""Measure the actual effect of each fault class on the declared standardized surprise
+(deterministic, no model calls).
 
-动机：原 materiality 是按故障模板拍板的高/中二分，与会计审计里 materiality 的量化
-含义不符，也没有与任何决策口径挂钩。这里改为可测量：对每条成对 clean/corrupt 轨迹，
-按「工作流忠实传播被污染输入」重算 SUE = (actual - mean) / max(stdev, 5%|mean|, 0.005)，
-再比较声明档位是否反转。
+Motivation: the original materiality was a high/medium dichotomy fixed per fault template.
+That does not match the quantitative meaning of materiality in accounting audit, and it was
+not tied to any decision convention. Here it is made measurable: for every paired
+clean/corrupt trace, recompute SUE = (actual - mean) / max(stdev, 5%|mean|, 0.005) under
+"the workflow faithfully propagates the contaminated input", then check whether the declared
+tier flips.
 
-产出的经验事实：只有改变数值输入的故障才改变声明数字；其余故障保持数字不变而摧毁
-该数字的支撑与可采纳性。因此 FAAB 的 materiality 是 admissibility，不是 magnitude。
+The resulting empirical fact: only faults that change a numeric input change the declared
+number; the rest leave the number intact while destroying its support and admissibility.
+FAAB materiality is therefore admissibility, not magnitude.
 """
 from __future__ import annotations
 
@@ -30,21 +34,26 @@ def _sue(actual: float, mean: float, stdev: float) -> float:
 
 
 def _value_chain(trace: dict[str, Any]) -> list[float]:
-    """同一个实际值沿链条的三次出现；干净轨迹里三者相等。"""
+    """The three appearances of the same actual value along the chain; equal on a clean trace."""
     e, _x, c, d, _s = [a["payload"] for a in trace["artifacts"]]
     return [float(e["normalized_value"]), float(c["normalized_value"]),
             float(d["value_used"])]
 
 
 def declared(trace: dict[str, Any], clean_trace: dict[str, Any]) -> tuple[float, str]:
-    """工作流忠实传播被污染输入后会声明的 SUE 与档位。
+    """The SUE and tier the workflow would declare after faithfully propagating a
+    contaminated input.
 
-    单点注入只会打破链条上的一环，因此「忠实传播」= 取最早偏离干净基准的那个值，
-    并让它流到下游。均值与离散度取（可能被污染的）expectation 工件。
+    A single-point injection breaks only one link in the chain, so "faithful propagation"
+    means: take the earliest value that deviates from the clean baseline and let it flow
+    downstream. Mean and dispersion come from the (possibly contaminated) expectation
+    artifact.
 
-    口径边界：这测的是**已物化轨迹**的数值后果。像 period_mismatch 这类故障在现实中
-    会换成另一期的共识数，但注入器只改期间键、不改估计值，因此其数值影响记为 0；
-    它的实质性在于该比较不可采纳，而不在于数字变了多少。
+    Scope boundary: this measures the numeric consequence of the **materialized trace**.
+    A fault such as period_mismatch would in reality swap in another period's consensus,
+    but the injector only changes the period key and not the estimate, so its numeric
+    effect is recorded as 0; its materiality lies in the comparison being inadmissible,
+    not in how much the number moved.
     """
     e, x, _c, d, _s = [a["payload"] for a in trace["artifacts"]]
     baseline = _value_chain(clean_trace)[0]

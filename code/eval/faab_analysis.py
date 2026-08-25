@@ -1,14 +1,17 @@
-"""汇总冻结 FAAB 评测：source-cluster bootstrap、配对检验与逐故障混淆。
+"""Aggregate a frozen FAAB evaluation: source-cluster bootstrap, paired tests and per-fault
+confusion.
 
-支持任意 (方法, 模型) 臂：预测文件按 `<method>_<split>[__<model>].jsonl` 自动发现，
-因此新增模型或新增审计器设计不需要改分析代码。
+Any (method, model) arm is supported: prediction files are discovered automatically as
+`<method>_<split>[__<model>].jsonl`, so adding a model or an auditor design needs no change to
+the analysis code.
 
   python3 eval/faab_analysis.py --split test
   python3 eval/faab_analysis.py --split challenge
 
-责任定位在正文按单一指标报告：本工作流的责任工位与决定性步骤一一对应（见
-faab/metrics.py 的 agent_step_bijective），分列两栏会把同一个变量报告两次。
-分列值仍写入 JSON 供附录核对。
+Responsibility localization is reported in the paper as a single metric: responsible agent and
+decisive step are in one-to-one correspondence in this workflow (see agent_step_bijective in
+faab/metrics.py), so splitting them into two columns would report the same variable twice. The
+split values are still written to the JSON for appendix checking.
 """
 from __future__ import annotations
 
@@ -43,7 +46,7 @@ METRICS = (
     "decisive_step_accuracy",
     "materiality_weighted_recall",
 )
-# 正文表格口径：责任定位只报一列。
+# Paper-table convention: responsibility localization gets a single column.
 PAPER_METRICS = (
     "clean_fpr", "fault_detection_recall", "root_cause_accuracy",
     "responsibility_localization_accuracy", "materiality_weighted_recall",
@@ -51,7 +54,7 @@ PAPER_METRICS = (
 
 
 def discover_arms(results: Path, split: str) -> dict[str, Path]:
-    """<method>_<split>[__<model>].jsonl → 臂名。排除 api 日志与指标文件。"""
+    """Map <method>_<split>[__<model>].jsonl to an arm name, excluding API logs and metrics files."""
     pattern = re.compile(rf"^(?P<method>.+?)_{split}(?:__(?P<model>.+))?\.jsonl$")
     arms: dict[str, Path] = {}
     for path in sorted(results.glob(f"*_{split}*.jsonl")):
@@ -132,7 +135,8 @@ def _percentile(values: list[float], q: float) -> float:
 
 
 def _exact_sign_p(better: int, worse: int) -> float:
-    """配对二项检验的双侧精确 p 值（忽略 ties）。正文只报区间，此值留档备查。"""
+    """Two-sided exact p-value of the paired binomial test (ties ignored). The paper reports only
+    intervals; this value is kept on record for checking."""
     n = better + worse
     if n == 0:
         return 1.0
@@ -144,7 +148,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", choices=sorted(SPLITS), default="test")
     parser.add_argument("--reference", default="rules_retrieval",
-                        help="配对比较的参照臂")
+                        help="reference arm for the paired comparison")
     parser.add_argument("--draws", type=int, default=10_000)
     parser.add_argument("--seed", type=int, default=20260726)
     args = parser.parse_args()
@@ -159,7 +163,7 @@ def main() -> None:
     partial = sorted(set(arms) - complete)
     arm_names = sorted(complete)
     if args.reference not in arm_names:
-        raise SystemExit(f"参照臂 {args.reference} 不完整；可用：{arm_names}")
+        raise SystemExit(f"reference arm {args.reference} is incomplete; available: {arm_names}")
 
     unit = Counter({source_id: 1 for source_id in sources})
     point = {arm: _weighted_metrics(cases, predictions[arm], unit) for arm in arm_names}
@@ -228,7 +232,8 @@ def main() -> None:
                 errors[f"{truth}->{pred}"] += 1
         confusion[arm] = dict(errors)
 
-    # 逐臂预测一致性：用来把「残余 LLM 零增益」做成可核对的事实而非断言。
+    # Per-arm prediction agreement: turns "the residual LLM adds nothing" into a checkable fact
+    # rather than an assertion.
     agreement = {}
     for arm in arm_names:
         if arm == args.reference:

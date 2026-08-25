@@ -1,4 +1,5 @@
-"""独立验证冻结 FAAB：split、单故障、原文引证、标签隔离与分布。"""
+"""Independently validate a frozen FAAB: splits, single fault, source-text quotes,
+label isolation and distribution."""
 from __future__ import annotations
 
 import argparse
@@ -54,7 +55,7 @@ def validate(path: str | Path = DEFAULT_OUT,
              db: str | Path = Path(__file__).resolve().parent.parent / "data" / "us500.db"
              ) -> dict[str, Any]:
     cases = load_benchmark(path)
-    from world.store import Store  # 惰性导入：仅构建/校验需要源库
+    from world.store import Store  # Lazy import: only building/validating needs the source DB.
 
     store = Store(str(db))
     filing_text = {r["msg_id"]: r["text"] for r in
@@ -69,7 +70,7 @@ def validate(path: str | Path = DEFAULT_OUT,
         split_of[case["source_id"]].add(case["split"])
         fault = case["oracle"]["fault_type"]
         counts[(case["split"], fault)] += 1
-        # 传给审计器的对象必须不含 oracle。
+        # The object handed to auditors must not contain the oracle.
         if "oracle" in json.dumps(public_trace(case), ensure_ascii=False):
             errors.append(f"{case['case_id']}: oracle leaked into public trace")
         src = case["trace"]["source"]
@@ -87,7 +88,8 @@ def validate(path: str | Path = DEFAULT_OUT,
             errors.append(f"{case['case_id']}: missing clean pair")
             continue
         base = clean[case["source_id"]]["trace"]
-        # hash 与显式引用会随合法传播变化，不计为第二个语义故障。
+        # Hashes and explicit references change under legitimate propagation; they do not
+        # count as a second semantic fault.
         changed = [p for p in _diff_paths(base, case["trace"])
                    if not p.endswith(".hash") and ".parent_hashes" not in p
                    and not p.endswith(".actual_ref") and not p.endswith(".expectation_ref")

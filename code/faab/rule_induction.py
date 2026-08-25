@@ -1,4 +1,4 @@
-"""从带标签的 FAAB development 轨迹归纳可执行审计规则。"""
+"""Induce executable audit rules from labeled FAAB development traces."""
 from __future__ import annotations
 
 import json
@@ -21,7 +21,8 @@ from .rule_dsl import (
 
 def _compact_snapshot(public_case: dict[str, Any]) -> dict[str, Any]:
     values = feature_snapshot(public_case)
-    # 原文与 hash 本身不帮助归纳通用规则；保留它们之间的关系，降低 prompt 噪声。
+    # Source text and hashes do not by themselves help induce general rules; keep the
+    # relations between them instead, which lowers prompt noise.
     omitted = {
         "source.document_excerpt",
         "evidence.hash",
@@ -95,7 +96,7 @@ def build_training_bundle(
     clean_examples: int = 8,
     seed: int = 0,
 ) -> dict[str, Any]:
-    """只从 development split 采样，标签作为离线规则归纳监督信号。"""
+    """Sample from the development split only; labels supervise offline rule induction."""
     dev = [case for case in cases if case["split"] == "dev"]
     by_fault: dict[str, list[dict[str, Any]]] = defaultdict(list)
     clean_by_source = {
@@ -288,7 +289,7 @@ def repair_prompt(
 
 
 def score_for_selection(metrics: dict[str, Any]) -> tuple[float, float, float]:
-    """开发集选择：先 root macro-F1，再 clean retention，再 agent/step。"""
+    """Development-set selection: root macro-F1 first, then clean retention, then agent/step."""
     return (
         float(metrics["root_cause_macro_f1"]),
         -float(metrics["clean_fpr"]),

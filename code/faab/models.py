@@ -1,10 +1,12 @@
-"""FAAB 基线的多厂商模型通道（OpenAI 兼容）。
+"""Multi-vendor model channel for the FAAB baselines (OpenAI-compatible).
 
-审稿意见要求主结论不能只建立在一个模型上，因此把「模型」从 agents/llm.py 的
-全局 provider 选择中解耦出来：这里按模型名解析厂商、base_url 与 key 环境变量，
-各基线用 --model 显式指定，结果文件按模型名分开归档。
+Reviewers asked that the main conclusions not rest on a single model, so "model" is decoupled
+from the global provider selection in agents/llm.py: this module resolves vendor, base_url and
+key environment variable from the model name, each baseline names its model explicitly with
+--model, and result files are archived separately per model.
 
-新增第二厂商只需在 VENDORS 里加一行：把 key 写进 .env 即可自动识别。
+Adding a second vendor takes one extra line in VENDORS; putting the key in .env is enough for
+it to be picked up automatically.
 """
 from __future__ import annotations
 
@@ -20,7 +22,8 @@ DEFAULT_MODEL = "deepseek-chat"
 
 
 def _load_dotenv() -> None:
-    """项目根 .env → os.environ（不覆盖真实环境变量），与 agents/llm.py 同约定。"""
+    """Project-root .env -> os.environ (never overriding real environment variables), following
+    the same convention as agents/llm.py."""
     path = ROOT / ".env"
     if not path.exists():
         return
@@ -34,8 +37,8 @@ def _load_dotenv() -> None:
 
 _load_dotenv()
 
-# vendor -> (key 环境变量, base_url, 模型名前缀)。前缀用于自动路由，也可用
-# "vendor:model" 显式指定。
+# vendor -> (key environment variable, base_url, model-name prefixes). Prefixes drive automatic
+# routing; "vendor:model" names a vendor explicitly.
 VENDORS: dict[str, dict[str, Any]] = {
     "deepseek": {
         "env": "DEEPSEEK_API_KEY",
@@ -67,7 +70,7 @@ VENDORS: dict[str, dict[str, Any]] = {
         "base_url": "https://openrouter.ai/api/v1",
         "prefixes": (),
     },
-    # 本地 CLI Proxy（OpenAI 兼容）。无前缀，必须写成 local:<model> 显式指定。
+    # Local CLI proxy (OpenAI-compatible). No prefixes, so it must be named as local:<model>.
     "local": {
         "env": "LOCAL_API_KEY",
         "base_url": "http://127.0.0.1:8318/v1",
@@ -75,14 +78,15 @@ VENDORS: dict[str, dict[str, Any]] = {
     },
 }
 
-# 推理型模型：不接受 temperature，且思维链会占用输出预算。
+# Reasoning models: they reject temperature, and their chain of thought consumes the output budget.
 _REASONING = re.compile(r"(reasoner|^o[134]|^gpt-5|thinking|qwq|-r1)", re.I)
-# 用 max_completion_tokens 而非 max_tokens 的模型族。
+# Model families that take max_completion_tokens rather than max_tokens.
 _COMPLETION_BUDGET = re.compile(r"^(gpt-5|o[134])", re.I)
 
 
 def vendor_of(model: str) -> str:
-    """按 "vendor:model" 或模型名前缀解析厂商；openrouter 作为显式兜底。"""
+    """Resolve the vendor from "vendor:model" or from a model-name prefix; openrouter is the
+    explicit fallback."""
     if ":" in model and model.split(":", 1)[0] in VENDORS:
         return model.split(":", 1)[0]
     name = model.lower()
@@ -90,8 +94,8 @@ def vendor_of(model: str) -> str:
         if any(name.startswith(p) for p in spec["prefixes"]):
             return vendor
     raise ValueError(
-        f"无法识别模型 {model} 的厂商；用 'vendor:model' 显式指定，"
-        f"可选 {sorted(VENDORS)}")
+        f"cannot infer the vendor for model {model}; name it explicitly as 'vendor:model', "
+        f"choosing from {sorted(VENDORS)}")
 
 
 def bare_name(model: str) -> str:
@@ -110,14 +114,14 @@ def available(model: str) -> bool:
 
 
 def slug(model: str) -> str:
-    """结果文件后缀：默认模型不加后缀，保持已冻结的 v1.4 文件名不变。"""
+    """Result-file suffix: the default model gets no suffix, keeping the frozen v1.4 filenames."""
     if model == DEFAULT_MODEL:
         return ""
     return "__" + re.sub(r"[^a-zA-Z0-9._-]+", "-", model)
 
 
 class ToolCall:
-    """归一化的工具调用，屏蔽 chat.completions 与 responses 的字段差异。"""
+    """Normalized tool call that hides the field differences between chat.completions and responses."""
 
     __slots__ = ("id", "name", "arguments")
 
@@ -128,7 +132,7 @@ class ToolCall:
 
 
 class Reply:
-    """归一化的模型回复。raw 保留厂商原生条目，供写回会话历史。"""
+    """Normalized model reply. `raw` keeps the vendor-native entry for writing back into history."""
 
     __slots__ = ("content", "tool_calls", "raw", "parsed_json")
 
@@ -140,8 +144,9 @@ class Reply:
 
 
 class ChatModel:
-    """OpenAI 兼容通道。gpt-5 系带推理的 function calling 只在 /v1/responses 可用，
-    因此按厂商选择 chat.completions 或 responses，并由本类负责会话历史格式。"""
+    """OpenAI-compatible channel. Function calling with reasoning on the gpt-5 family is only
+    available on /v1/responses, so the vendor decides between chat.completions and responses and
+    this class owns the conversation-history format."""
 
     def __init__(self, model: str = DEFAULT_MODEL, timeout: int = 600):
         from openai import OpenAI
@@ -152,17 +157,18 @@ class ChatModel:
         spec = VENDORS[self.vendor]
         key = os.environ.get(spec["env"])
         if not key:
-            raise RuntimeError(f"{model} 需要环境变量 {spec['env']}")
+            raise RuntimeError(f"{model} requires the environment variable {spec['env']}")
         kwargs: dict[str, Any] = {"api_key": key, "timeout": timeout}
         if spec["base_url"]:
             kwargs["base_url"] = spec["base_url"]
         self.client = OpenAI(**kwargs)
         self.reasoning = is_reasoning(model)
-        # 本地 CLI Proxy 只暴露 chat.completions，没有 /v1/responses。
+        # The local CLI proxy exposes only chat.completions, not /v1/responses.
         self.api = ("responses" if self.vendor == "openai"
                     and _COMPLETION_BUDGET.match(self.model_name) else "chat")
 
-    # --- 会话构造：调用方只用这四个方法，不直接拼 provider 字段 ---------------
+    # --- Conversation construction: callers use only these four methods and never assemble
+    # --- provider fields themselves ------------------------------------------------------
 
     def seed(self, system: str, user: str) -> list[Any]:
         return [{"role": "system", "content": system}, {"role": "user", "content": user}]
@@ -185,15 +191,16 @@ class ChatModel:
                                  "content": output})
 
     def tool_schema(self, tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """TOOL_SPECS 以 chat.completions 形状声明；responses 需要摊平。"""
+        """TOOL_SPECS are declared in chat.completions shape; responses needs them flattened."""
         if self.api != "responses":
             return tools
         return [{"type": "function", **t["function"]} for t in tools]
 
-    # --- 调用 ---------------------------------------------------------------
+    # --- Invocation ----------------------------------------------------------
 
     def _budget(self, max_tokens: int) -> int:
-        # 思维链计入输出预算；不给推理型模型留额度会截断在 reasoning 阶段。
+        # Chain of thought counts against the output budget; without headroom a reasoning model
+        # gets truncated during the reasoning phase.
         return max(max_tokens, 8192) if self.reasoning else max_tokens
 
     def complete(
@@ -221,7 +228,7 @@ class ChatModel:
             kwargs["response_format"] = {"type": "json_object"}
         try:
             response = self.client.chat.completions.create(**kwargs)
-        except Exception as exc:  # 部分推理型模型拒绝 response_format/temperature
+        except Exception as exc:  # Some reasoning models reject response_format/temperature.
             text = str(exc).lower()
             if not any(t in text for t in ("response_format", "temperature",
                                            "json_object", "max_tokens")):
@@ -274,7 +281,8 @@ _THINK = re.compile(r"<think>.*?</think>", re.S)
 
 
 def parse_json(text: str | None) -> dict[str, Any]:
-    """从模型文本里取一个 JSON 对象：容忍代码围栏、思维链标签与前后散文。"""
+    """Extract one JSON object from model text, tolerating code fences, chain-of-thought tags
+    and surrounding prose."""
     if not text:
         raise ValueError("empty response")
     body = _THINK.sub("", text).strip()

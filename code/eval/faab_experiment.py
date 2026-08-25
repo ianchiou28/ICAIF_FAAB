@@ -1,14 +1,16 @@
-"""运行 FAAB rule-only / LLM judge / debate / tool auditor / hybrid，保存逐例输出与指标。
+"""Run FAAB rule-only / LLM judge / debate / tool auditor / hybrid, saving per-case outputs
+and metrics.
 
-用法：
+Usage:
   python3 -m faab.benchmark
   python3 eval/faab_experiment.py --methods rule_only
   python3 eval/faab_experiment.py --methods llm_judge debate hybrid --workers 12
   python3 eval/faab_experiment.py --methods tool_auditor --model gpt-5.6-sol --workers 8
 
-LLM 模式的 key 见 faab/models.py 的 VENDORS；默认模型 deepseek-chat 的结果文件不带
-后缀（保持 v1.4 冻结命名），其余模型写入 <method>_<split>__<model>.jsonl。
-中途可恢复，已完成 case 不重跑。
+Keys for the LLM modes are listed in VENDORS in faab/models.py. Result files for the default
+model deepseek-chat carry no suffix (preserving the frozen v1.4 naming); other models are
+written to <method>_<split>__<model>.jsonl. Runs are resumable, and completed cases are not
+rerun.
 """
 from __future__ import annotations
 
@@ -35,8 +37,8 @@ OUT_DIR = ROOT / "data" / "faab" / "results"
 
 LLM_METHODS = ("llm_judge", "debate", "hybrid", "tool_auditor")
 DETERMINISTIC_METHODS = ("rule_only", "rules_retrieval")
-# prompt 修订后的运行写入带版本后缀的文件，绝不与已冻结的 v1.4 结果混在一起。
-# 确定性臂与 prompt 无关，不加后缀。
+# Runs made after a prompt revision are written to version-suffixed files and never mixed with
+# the frozen v1.4 results. Deterministic arms do not depend on the prompt, so they get no suffix.
 PROMPT_TAG = "" if PROMPT_VERSION.endswith("1.4") else (
     "__p" + PROMPT_VERSION.rsplit("-", 1)[-1].replace(".", ""))
 
@@ -57,7 +59,8 @@ class CachedCaller:
         self._restore_log_totals()
 
     def _restore_log_totals(self) -> None:
-        """恢复中断前的 API 统计；日志不含密钥，可与逐例预测一起归档。"""
+        """Restore API statistics from before an interruption; the log holds no keys, so it can be
+        archived alongside the per-case predictions."""
         if not self.log_path.exists():
             return
         for line in self.log_path.read_text().splitlines():
@@ -82,10 +85,16 @@ class CachedCaller:
                 f.write(raw)
 
     def _ask_once(self, system: str, user: str, schema: dict) -> tuple[dict, dict[str, int]]:
-        """单次结构化裁决。system 拼装与 v1.4 冻结运行保持逐字一致。"""
+        """One structured adjudication.
+
+        The system assembly mirrors the v1.4 frozen run; the trailing field instruction below
+        was originally written in Chinese and has since been translated, so prompts are no
+        longer byte-identical to that run.
+        """
         fields = {k: (v.get("enum") or v.get("type"))
                   for k, v in schema.get("properties", {}).items()}
-        sys2 = system + "\n\n只输出一个 JSON 对象，必须包含这些字段（值需合法）：\n" + \
+        sys2 = system + "\n\nOutput only one JSON object, which must contain these fields " \
+            "(values must be valid):\n" + \
             json.dumps(fields, ensure_ascii=False)
         reply, usage = self.model.complete(
             self.model.seed(sys2, user), max_tokens=600, json_object=True)
@@ -110,11 +119,12 @@ class CachedCaller:
     def chat(self, conversation: list[Any], tools: list[dict[str, Any]] | None = None,
              max_tokens: int = 1024, json_object: bool = False,
              purpose: str = "chat") -> tuple[Any, dict[str, int]]:
-        """多轮通道：返回 (Reply, usage)；重试耗尽返回 (None, {})。"""
+        """Multi-turn channel: returns (Reply, usage), or (None, {}) once retries are exhausted."""
         with self.lock:
             self._request_seq += 1
             request_id = self._request_seq
-        # 首轮记完整会话，后续只记增量尾巴：工具结果是 trace 的确定性函数，可完整重建。
+        # Log the full conversation on the first round and only the incremental tail afterwards:
+        # tool results are a deterministic function of the trace, so it can be rebuilt in full.
         logged = conversation if len(conversation) <= 2 else conversation[2:]
         err = None
         attempts = 0
@@ -136,7 +146,7 @@ class CachedCaller:
                                    for c in reply.tool_calls],
                 }, attempts, usage)
                 return reply, usage
-            except Exception as exc:  # API 暂态错误重试，最终显式 unresolved。
+            except Exception as exc:  # Retry transient API errors; give up as an explicit unresolved.
                 err = exc
         self._record(request_id, "failed", {
             "purpose": purpose, "n_items": len(conversation), "conversation_tail": logged,
@@ -160,7 +170,7 @@ class CachedCaller:
                     "system": system, "user": user, "schema": schema, "response": out,
                 }, attempts, usage)
                 return out
-            except Exception as exc:  # API 暂态错误重试，最终显式 unresolved。
+            except Exception as exc:  # Retry transient API errors; give up as an explicit unresolved.
                 err = exc
         self._record(request_id, "failed", {
             "system": system, "user": user, "schema": schema,
@@ -218,7 +228,7 @@ def run_method(method: str, cases: list[dict[str, Any]], split: str, workers: in
         row = {"case_id": case["case_id"], "source_id": case["source_id"],
                "method": method, "prediction": normalize_result(raw),
                "latency_s": round(time.time() - started, 4)}
-        if "tool_calls_made" in raw:  # 工具审计员的诊断量，不进入指标
+        if "tool_calls_made" in raw:  # Tool-auditor diagnostic; does not enter the metrics.
             row["tool_calls_made"] = raw["tool_calls_made"]
         return row
 
@@ -268,16 +278,16 @@ def main() -> None:
     ap.add_argument("--out-dir", default=str(OUT_DIR))
     ap.add_argument("--workers", type=int, default=12)
     ap.add_argument("--model", default=models.DEFAULT_MODEL,
-                    help="LLM 基线使用的模型，如 deepseek-reasoner 或 gpt-5.6-sol")
+                    help="model used by the LLM baselines, e.g. deepseek-reasoner or gpt-5.6-sol")
     ap.add_argument("--limit", type=int, default=0,
-                    help="只跑前 N 条（管道验证用，0 表示全量）")
+                    help="run only the first N cases (pipeline check; 0 means all)")
     args = ap.parse_args()
     cases = load_benchmark(args.benchmark)
     if args.limit:
         keep = {c["case_id"] for c in
                 [c for c in cases if c["split"] == args.split][:args.limit]}
         cases = [c for c in cases if c["split"] != args.split or c["case_id"] in keep]
-    # 冒烟跑写独立文件，绝不覆盖冻结结果。
+    # Smoke runs write to their own files and never overwrite frozen results.
     tag_suffix = f"__smoke{args.limit}" if args.limit else ""
     for method in args.methods:
         metrics = run_method(method, cases, args.split,

@@ -1,16 +1,22 @@
-"""工具增强型 LLM 审计员（agentic baseline）。
+"""Tool-augmented LLM auditor (agentic baseline).
 
-设计动机：单次全轨迹判官在算术、日期比较与跨 span 检索上失败，而 FAAB 的 14 类故障
-里相当一部分本质就是这三件事。若不给判官计算器就宣称「确定性控制优于 LLM 审计员」，
-比较是不公平的。本模块因此提供当前最强的 LLM 侧对手：
+Design motivation: a single-pass whole-trace judge fails at arithmetic, date comparison and
+cross-span retrieval, and a sizeable share of FAAB's 14 fault classes reduce to exactly those
+three things. Claiming that "deterministic controls beat LLM auditors" without giving the judge
+a calculator would be an unfair comparison. This module therefore provides the strongest
+LLM-side opponent available:
 
-- system prompt 把 §3 的七条控制契约展开为逐项 checklist，与人工契约同一控制面；
-- 六个确定性工具承担算术、单位相乘、日期序、跨 span 数值检索、引文包含与哈希链校验；
-- 多轮 function calling，模型自行决定查哪一项、如何解读，最后输出一次结构化裁决。
+- the system prompt expands the seven control contracts of Section 3 into an item-by-item
+  checklist, over the same control surface as the human contracts;
+- six deterministic tools cover arithmetic, unit multiplication, date ordering, cross-span
+  numeric retrieval, quote containment and hash-chain verification;
+- multi-turn function calling, where the model decides what to check and how to read it, and
+  finally emits one structured adjudication.
 
-边界：工具只做原语计算与检索，**不返回任何故障类别判断**；选择运行哪项检查、解释
-结果、挑出最早决定性原因并映射到故障类/责任工位，全部由模型完成。工具只读
-public_trace，不接触 oracle。
+Boundary: the tools only perform primitive computation and retrieval and **return no fault-class
+judgment**; choosing which check to run, interpreting the results, picking the earliest decisive
+cause and mapping it to a fault class and responsible agent are all done by the model. The tools
+read public_trace only and never touch the oracle.
 """
 from __future__ import annotations
 
@@ -91,7 +97,7 @@ Use verdict "pass" and fault_type "none" when every control holds.""" % (
     json.dumps(VERDICTS), json.dumps(FAULT_TYPES), json.dumps(AGENTS))
 
 
-# --- 确定性工具实现：只读 public_trace，只做原语计算 ---------------------------
+# --- Deterministic tool implementations: read public_trace only, primitive computation only ---
 
 _NUM_RE = re.compile(r"-?\d[\d,]*(?:\.\d+)?")
 
@@ -233,7 +239,7 @@ TOOL_SPECS: list[dict[str, Any]] = [
 
 
 class ToolRuntime:
-    """把工具调用落到具体 trace 上；调用计数用于诊断，不进入指标。"""
+    """Bind tool calls to a concrete trace; the call count is diagnostic and does not enter metrics."""
 
     def __init__(self, public_case: dict[str, Any]):
         self.trace = public_case["trace"]
@@ -314,10 +320,11 @@ class ToolRuntime:
 
 
 class ToolAugmentedAuditor:
-    """多轮工具增强审计员。
+    """Multi-turn tool-augmented auditor.
 
-    会话历史的 provider 差异（chat.completions 的 tool 消息 vs responses 的
-    function_call_output 条目）由注入的 model 对象负责，本类只管审计逻辑。
+    Provider differences in conversation history (chat.completions tool messages vs responses
+    function_call_output entries) are handled by the injected model object; this class owns only
+    the audit logic.
     """
 
     name = "tool_auditor"

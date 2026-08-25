@@ -1,10 +1,11 @@
-"""从真实 SEC/IBES 账本构造 FAAB clean/corrupted 成对轨迹。
+"""Build paired clean/corrupted FAAB traces from real SEC/IBES ledgers.
 
-原则：
-1. 原始 filing、引证、时间戳、ticker 与共识快照均来自 data/us500.db；
-2. 每个 corrupted case 只注入一个预先声明的最小故障；
-3. oracle 标签与公开 trace 分离，审计器永远看不到 oracle；
-4. 同一 source 的 clean/fault 变体固定进入同一 split。
+Principles:
+1. Original filings, quotes, timestamps, tickers and consensus snapshots all come from
+   data/us500.db;
+2. Each corrupted case injects exactly one pre-declared minimal fault;
+3. Oracle labels are kept separate from the public trace, so auditors never see the oracle;
+4. The clean and fault variants of one source always land in the same split.
 """
 from __future__ import annotations
 
@@ -76,7 +77,8 @@ def _value_token(value: float) -> str:
 
 
 def _contains_value(span: str, value: float) -> bool:
-    """数值必须直接出现在引文中；不把百分比、年份或近似数字当作命中。"""
+    """The value must appear literally in the quote; percentages, years and approximate
+    numbers do not count as a hit."""
     for m in _NUM.finditer(span):
         if m.group(2) and m.group(2).lower() in {
             "%", "percent", "million", "billion", "thousand",
@@ -89,7 +91,8 @@ def _contains_value(span: str, value: float) -> bool:
 
 
 def _same_eps_scale(filing_actual: float, ibes_actual: float | None) -> bool:
-    """用 I/B/E/S 同源 actual 排除拆股回溯调整和会计口径错配。"""
+    """Use the I/B/E/S actual from the same source to rule out split-adjusted restatements
+    and accounting-basis mismatches."""
     if ibes_actual is None:
         return False
     actual = float(ibes_actual)
@@ -98,10 +101,11 @@ def _same_eps_scale(filing_actual: float, ibes_actual: float | None) -> bool:
 
 
 def _extract_eps_span(quotes: str, text: str, actual_eps: float) -> tuple[str, float] | None:
-    """只接受明确支持数据库 actual_eps 的已实现 EPS 引文。
+    """Accept only realized-EPS quotes that unambiguously support the database actual_eps.
 
-    FAAB 的 clean trace 不能把股息、年度指引或区间端点伪装成季度实际 EPS。
-    这里宁可丢弃模糊样本，也不依赖 LLM 替 benchmark 猜语义。
+    A FAAB clean trace must not pass off a dividend, annual guidance or a range endpoint as
+    quarterly actual EPS. This prefers discarding ambiguous samples over relying on an LLM to
+    guess semantics on the benchmark's behalf.
     """
     parts = [_norm_text(p) for p in re.split(r"[;\n]+", quotes) if _norm_text(p)]
     text_n = _norm_text(text).lower()
@@ -119,7 +123,8 @@ def _extract_eps_span(quotes: str, text: str, actual_eps: float) -> tuple[str, f
 
 
 def _decoy_span(text: str, evidence: str) -> str:
-    """从同一真实 filing 取另一段作为错误引证，避免跨公司拼接。"""
+    """Take another span from the same real filing as the mis-citation, avoiding cross-company
+    splicing."""
     text_n = _norm_text(text)
     chunks = [c.strip() for c in re.split(r"(?<=[.!?])\s+", text_n) if 25 <= len(c.strip()) <= 260]
     ev = evidence.lower()
@@ -170,8 +175,9 @@ def _make_artifact(step: int, agent: str, payload: dict[str, Any],
 def _rehash(trace: dict[str, Any]) -> None:
     parent = trace["source"]["hash"]
     for i, artifact in enumerate(trace["artifacts"]):
-        # 合法传播：上游工件版本变化后，下游显式引用同步；空 handoff 保持为空，
-        # 以免把 missing_handoff 注入器“修好”。
+        # Legitimate propagation: when an upstream artifact version changes, downstream explicit
+        # references follow; an empty handoff stays empty so the missing_handoff injection is not
+        # silently "repaired".
         if i == 2:
             artifact["payload"]["actual_ref"] = trace["artifacts"][0]["hash"]
             artifact["payload"]["expectation_ref"] = trace["artifacts"][1]["hash"]
@@ -191,8 +197,9 @@ def _clean_trace(row: dict[str, Any], evidence: str, raw_value: float, decoy: st
     latest, stale = snapshots[-1], snapshots[-2]
     basis = "non_gaap" if _NON_GAAP.search(evidence) else "reported"
     definition = "adjusted_diluted_eps" if basis == "non_gaap" else "diluted_eps"
-    # 季度自然语言标签来自抽取器，可能把 fiscal Q2 写成 calendar Q3；
-    # I/B/E/S FPEDATS 是匹配共识时使用的确定性财季连接键，公开 trace 统一采用它。
+    # The natural-language quarter label comes from the extractor and may render fiscal Q2 as
+    # calendar Q3; I/B/E/S FPEDATS is the deterministic fiscal-quarter join key used when matching
+    # consensus, so the public trace uses it throughout.
     period = latest["fpedats"]
     source_payload = {
         "msg_id": row["msg_id"], "ticker": row["ticker"], "period": period,
@@ -299,7 +306,7 @@ def build_benchmark(db: str | Path = ROOT / "data" / "us500.db",
                     n_clean: int = 300,
                     n_per_fault: int = 50,
                     seed: int = SEED) -> list[dict[str, Any]]:
-    from world.store import Store  # 惰性导入：仅构建/校验需要源库
+    from world.store import Store  # Lazy import: only building/validating needs the source DB.
 
     store = Store(str(db))
     ann, snaps = _consensus_index(store)
@@ -316,20 +323,22 @@ def build_benchmark(db: str | Path = ROOT / "data" / "us500.db",
         if not hit or len(ss) < 2:
             continue
         quote, value = hit
-        # I/B/E/S consensus 与 actual 是同一 non-GAAP 口径；只保留 filing 引文也明确
-        # 为 non-GAAP 且二者同尺度的事件，避免拆股回溯或 GAAP/non-GAAP 假冲突。
+        # I/B/E/S consensus and actual share one non-GAAP basis; keep only events whose filing
+        # quote is also explicitly non-GAAP and on the same scale, avoiding split restatements and
+        # spurious GAAP/non-GAAP conflicts.
         if not _NON_GAAP.search(quote) or not _same_eps_scale(value, ss[-1].get("actual")):
             continue
         candidates.append((row, quote, value, _decoy_span(row["text"], quote), ss))
     rng.shuffle(candidates)
     if len(candidates) < n_clean:
-        raise RuntimeError(f"可用基础轨迹仅 {len(candidates)}，少于 n_clean={n_clean}")
+        raise RuntimeError(f"only {len(candidates)} base traces available, "
+                           f"fewer than n_clean={n_clean}")
 
     bases = candidates[:n_clean]
     clean_by_id: dict[str, dict] = {}
     other_by_id: dict[str, str] = {}
     cases: list[dict[str, Any]] = []
-    # 前 20% source 进入 dev，剩余进入 test；所有变体继承该 split。
+    # The first 20% of sources go to dev and the rest to test; every variant inherits that split.
     n_dev = max(1, n_clean // 5)
     for i, (row, quote, value, decoy, ss) in enumerate(bases):
         other = next(t for t in tickers if t != row["ticker"])
@@ -388,7 +397,8 @@ def load_benchmark(path: str | Path = DEFAULT_OUT) -> list[dict[str, Any]]:
 
 
 def public_trace(case: dict[str, Any]) -> dict[str, Any]:
-    """剥掉 oracle 与可读 case_id；后者包含故障类前缀，绝不能进入模型输入。"""
+    """Strip the oracle and the human-readable case_id; the latter carries a fault-class prefix
+    and must never reach model input."""
     return {"trace_id": _hash(case["case_id"]), "source_id": case["source_id"],
             "trace": case["trace"]}
 

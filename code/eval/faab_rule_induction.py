@@ -1,9 +1,10 @@
-"""FAAB 离线规则归纳与 held-out challenge 评测。
+"""FAAB offline rule induction and held-out challenge evaluation.
 
-流程分离：
-1. induce 只读取 FAAB v1.4 development split，调用 DeepSeek 生成并修复 DSL；
-2. freeze 固定规则、prompt、代码与 challenge 哈希；
-3. evaluate 才读取 challenge labels，并运行确定性/在线基线。
+The stages are kept separate:
+1. induce reads only the FAAB v1.4 development split, calling DeepSeek to generate and repair DSL;
+2. freeze pins the rules, prompts, code and challenge hashes;
+3. evaluate is the first stage to read challenge labels, and runs the deterministic and online
+   baselines.
 """
 from __future__ import annotations
 
@@ -69,12 +70,12 @@ def _append_jsonl(path: Path, row: dict[str, Any], lock: threading.Lock | None =
 
 
 class InductionCaller:
-    """大输出 JSON 调用器；日志保存 prompt/response/usage，但不保存密钥。"""
+    """Large-output JSON caller; the log keeps prompt/response/usage but never keys."""
 
     def __init__(self, log_path: Path):
         self.model = llm.make_llm()
         if not isinstance(self.model, llm.DeepSeekLLM):
-            raise RuntimeError("规则归纳实验需要 DEEPSEEK_API_KEY")
+            raise RuntimeError("the rule-induction experiment requires DEEPSEEK_API_KEY")
         self.log_path = log_path
         self.request_id = 0
         self.successful_calls = 0
@@ -145,7 +146,7 @@ class InductionCaller:
                     "usage": usage,
                 })
                 return output
-            except Exception as exc:  # 网络和 JSON 暂态错误显式重试。
+            except Exception as exc:  # Explicitly retry transient network and JSON errors.
                 error = exc
         self.failed_calls += 1
         _append_jsonl(self.log_path, {
@@ -340,7 +341,8 @@ def freeze(induction: dict[str, Any], challenge: str | Path) -> dict[str, Any]:
 
 
 class AugmentedAuditor:
-    """人工控制拥有 veto；仅在人工作出 pass 时允许归纳规则补充 finding。"""
+    """The human controls hold a veto; induced rules may add a finding only when the human
+    controls pass."""
 
     name = "human_plus_induced"
 

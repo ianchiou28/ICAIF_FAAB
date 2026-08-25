@@ -1,4 +1,4 @@
-"""FAAB 审计器与统一输出契约。"""
+"""FAAB auditors and the shared output contract."""
 from __future__ import annotations
 
 import json
@@ -59,7 +59,7 @@ def normalize_result(result: dict[str, Any] | None) -> dict[str, Any]:
 
 
 class RuleAuditor:
-    """只看公开 trace 的确定性控制；不访问 clean pair 或 oracle。"""
+    """Deterministic controls over the public trace only; no access to the clean pair or oracle."""
 
     name = "rule_only"
 
@@ -77,7 +77,8 @@ class RuleAuditor:
         if e["quote"] not in src["document_excerpt"]:
             return finding("quote_mismatch", "evidence_agent", 1, arts[0]["hash"])
         if not _num_in_quote(float(e["raw_value"]), e["quote"]):
-            # 公开轨迹不足以区分“数字编造”和“引文错配”；规则基线固定猜前者。
+            # The public trace cannot separate a fabricated value from a quote mismatch;
+            # the rule baseline always guesses the former.
             return finding("fabricated_value", "evidence_agent", 1, arts[0]["hash"])
         expected_norm = float(e["raw_value"]) * float(e["unit_multiplier"])
         if not math.isclose(expected_norm, float(e["normalized_value"]), rel_tol=1e-9):
@@ -124,9 +125,10 @@ def llm_schema() -> dict[str, Any]:
 
 PROMPT_VERSION = "faab-prompts-1.5"
 
-# v1.5 新增：声明账本自身的推导式。v1.4 的干净轨迹用了一个 trace 里没有出现的
-# 离散度下限，200 条干净轨迹里 147 条经不起朴素 (a-mu)/sigma 复算；认真复算的
-# 推理型判官因此把干净工作流判成编造。这是可观测性缺陷，不是模型缺陷。
+# New in v1.5: the declaration ledger's own derivation. The v1.4 clean traces used a
+# dispersion floor that never appeared in the trace, so 147 of 200 clean traces failed a naive
+# (a-mu)/sigma recomputation; reasoning judges that recompute carefully therefore called clean
+# workflows fabricated. That is an observability defect, not a model defect.
 DERIVATIONS = """
 Declared ledger derivations. These are part of the control definition; use them and do
 not assume a different one:
@@ -249,10 +251,11 @@ class DebateAuditor:
 
 
 class RulesRetrievalAuditor:
-    """规则 + 确定性跨 span 检索，零模型调用。
+    """Rules plus deterministic cross-span retrieval, with zero model calls.
 
-    这是 hybrid 的确定性内核。单独成类是为了让「残余 LLM 复核是否有增益」成为一条
-    可测量的消融，而不是脚注里的断言。
+    This is the deterministic kernel of the hybrid arm. It is a separate class so that
+    "does the residual LLM review add anything?" becomes a measurable ablation rather than
+    an assertion in a footnote.
     """
 
     name = "rules_retrieval"
@@ -262,7 +265,8 @@ class RulesRetrievalAuditor:
 
     def audit(self, public_case: dict[str, Any]) -> dict[str, Any]:
         r = self.rules.audit(public_case)
-        # 精确控制已经给出唯一根因时直接阻断；证据接地类需跨 span 消歧。
+        # Block immediately when an exact control already gives a unique root cause;
+        # evidence-grounding classes need cross-span disambiguation.
         if r["fault_type"] not in ("none", "fabricated_value", "quote_mismatch"):
             return r
         if r["fault_type"] == "none":
@@ -277,8 +281,10 @@ class RulesRetrievalAuditor:
             if span.strip() and span.strip() != evidence["quote"].strip()
             and _num_in_quote(float(evidence["raw_value"]), span)
         ]
-        # submitted quote 已确定不支持 claimed value；同源其他 span 有该值则是错引，
-        # 否则是编造。该定义可执行，不再让 LLM 覆盖确定性根因。
+        # The submitted quote is already known not to support the claimed value; if another
+        # span of the same source carries that value it is a mis-citation, otherwise it is
+        # fabrication. This definition is executable, so the LLM no longer overrides a
+        # deterministic root cause.
         fault = "quote_mismatch" if candidate_spans else "fabricated_value"
         return finding(
             fault, "evidence_agent", 1, trace["artifacts"][0]["hash"],
@@ -288,7 +294,8 @@ class RulesRetrievalAuditor:
 
 
 class HybridAuditor(RulesRetrievalAuditor):
-    """确定性内核 + 残余 LLM 复核：只有内核判 pass 时才升级到模型。"""
+    """Deterministic kernel plus residual LLM review: escalate to the model only when the
+    kernel passes."""
 
     name = "hybrid"
 
@@ -300,6 +307,7 @@ class HybridAuditor(RulesRetrievalAuditor):
         r = super().audit(public_case)
         if r["fault_type"] != "none":
             return r
-        # 内核判 pass 时 r 就是规则报告本身，与 v1.4 冻结运行的 prompt 逐字一致。
+        # When the kernel passes, r is the rule report itself, matching the v1.4 frozen run's
+        # prompt verbatim.
         user = case_prompt(public_case) + "\n\nDETERMINISTIC_REPORT:\n" + json.dumps(r)
         return normalize_result(self.ask(HYBRID_SYSTEM, user, llm_schema()))

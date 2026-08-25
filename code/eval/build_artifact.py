@@ -1,14 +1,16 @@
-"""打包匿名评审产物到 artifact/。
+"""Package the anonymous review artifact into artifact/.
 
-边界（与论文 §可复现性一致）：
-- 代码、manifest、冻结哈希、逐例预测、指标与分析全部随附；
-- **不随附**冻结的 benchmark/challenge 本体：其 expectation 工件含有许可的 I/B/E/S
-  一致预期数值，不可再分发。随附构建脚本、manifest 与 SHA-256，持有许可的读者可
-  逐位重建并核对哈希；
-- **不随附**原始 API 日志：共 307 MB，且其中嵌入的 prompt 同样含许可数值。改为随附
-  逐次调用的用量摘要（模型、用途、重试、token、状态），足以复核成本与调用次数声明。
+Boundaries (consistent with the Reproducibility section of the paper):
+- code, manifests, frozen hashes, per-case predictions, metrics and analysis are all included;
+- the frozen benchmark/challenge themselves are **not included**: their expectation artifacts
+  carry licensed I/B/E/S consensus values and cannot be redistributed. The build scripts,
+  manifests and SHA-256 digests are included, so a reader holding the license can rebuild them
+  bit for bit and check the hashes;
+- the raw API logs are **not included**: 307 MB in total, and the prompts embedded in them
+  likewise carry licensed values. Included instead is a per-call usage summary (model, purpose,
+  retries, tokens, status), which is enough to check the cost and call-count claims.
 
-用法：python3 eval/build_artifact.py [--out artifact]
+Usage: python3 eval/build_artifact.py [--out artifact]
 """
 from __future__ import annotations
 
@@ -48,7 +50,7 @@ FROZEN = [
 
 HASHED = ["data/faab/benchmark.jsonl", "data/faab_rule_induction/challenge.jsonl"]
 
-# 打包时排除的目录：作废运行与被配额中断的部分运行。
+# Directories excluded from the package: voided runs and partial runs cut short by quota.
 EXCLUDE_DIRS = ("invalid_v1_3_label_leak", "prepilot", "archive_gpt56sol_quota")
 
 
@@ -83,10 +85,11 @@ _DECIMAL = re.compile(r"(?<![\w.])\d+\.\d{2,}")
 
 
 def _redact_rationale(row: dict) -> dict:
-    """把模型 rationale 里的多位小数替换为占位符。
+    """Replace multi-digit decimals in model rationales with a placeholder.
 
-    模型经常在自由文本里引用轨迹中的数值（约 31% 的预测），其中可能包含许可的
-    I/B/E/S 共识值。裁决、故障类、责任方与步骤不受影响，因此所有论文指标仍可复算。
+    Models frequently quote trace values in free text (about 31% of predictions), and those may
+    include licensed I/B/E/S consensus values. Verdict, fault class, responsible agent and step
+    are unaffected, so every paper metric remains recomputable.
     """
     rationale = row.get("prediction", {}).get("rationale")
     if rationale:
@@ -126,7 +129,8 @@ def copy_results(out: Path, redact: bool = False) -> tuple[int, int]:
 
 
 def summarize_api_logs(out: Path) -> int:
-    """逐次调用的用量摘要；不含 prompt 与响应文本，因此不携带许可数值。"""
+    """Per-call usage summary; it holds no prompt or response text and therefore carries no
+    licensed values."""
     rows = []
     for base in ("data/faab/results", "data/faab_rule_induction/results"):
         for path in sorted((ROOT / base).rglob("*_api.jsonl")):
@@ -179,8 +183,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", default=str(ROOT / "artifact"))
     parser.add_argument("--redact-rationales", action="store_true",
-                        help="把预测 rationale 里的多位小数替换为 <num>，"
-                             "避免带出许可的共识数值；指标不受影响")
+                        help="replace multi-digit decimals in prediction rationales with <num> "
+                             "so licensed consensus values are not carried out; metrics are "
+                             "unaffected")
     args = parser.parse_args()
     out = Path(args.out)
     if out.exists():

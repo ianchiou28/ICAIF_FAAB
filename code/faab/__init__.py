@@ -1,1 +1,1 @@
-"""FAAB：金融多智能体工作流审计基准。"""
+"""FAAB: a benchmark for auditing financial multi-agent workflows."""

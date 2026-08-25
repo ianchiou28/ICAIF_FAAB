@@ -1,7 +1,8 @@
-"""从 FAAB v1.4 未使用来源构造规则归纳 sealed challenge set。
+"""Build the sealed rule-induction challenge set from FAAB v1.4 sources left unused.
 
-Challenge 保留相同的 14 类金融控制契约，但更换来源、数值扰动和部分故障表达。
-生成后以 manifest 哈希冻结；规则归纳器只能使用 v1.4 development split。
+The challenge keeps the same 14 financial control contracts but swaps in different sources,
+numeric perturbations and some alternative fault expressions. Once generated it is frozen by
+manifest hash; the rule inducer may only use the v1.4 development split.
 """
 from __future__ import annotations
 
@@ -41,7 +42,7 @@ DEFAULT_CHALLENGE = ROOT / "data" / "faab_rule_induction" / "challenge.jsonl"
 
 
 def _eligible_unused(db: str | Path, base_benchmark: str | Path) -> tuple[list[tuple], list[str]]:
-    from world.store import Store  # 惰性导入：仅构建/校验需要源库
+    from world.store import Store  # Lazy import: only building/validating needs the source DB.
 
     store = Store(str(db))
     used = {c["source_id"] for c in load_benchmark(base_benchmark)}
@@ -75,7 +76,8 @@ def _eligible_unused(db: str | Path, base_benchmark: str | Path) -> tuple[list[t
 
 
 def _rehash_decision_and_settlement(trace: dict[str, Any]) -> None:
-    """保留 decision.source_ref 故障，同时让工件链自身仍合法传播。"""
+    """Keep the decision.source_ref fault while letting the artifact chain itself still
+    propagate legitimately."""
     decision = trace["artifacts"][3]
     decision["parent_hashes"] = [trace["artifacts"][2]["hash"]]
     decision["hash"] = _hash({k: v for k, v in decision.items() if k != "hash"})
@@ -85,7 +87,8 @@ def _rehash_decision_and_settlement(trace: dict[str, Any]) -> None:
 
 
 def _inject_challenge(clean: dict[str, Any], fault: str, other_ticker: str) -> dict[str, Any]:
-    """与训练注入器同契约、不同参数；missing handoff 改为 source_ref 丢失。"""
+    """Same contracts as the training injector but different parameters; missing handoff
+    becomes a lost source_ref."""
     trace = copy.deepcopy(clean)
     e, x, c, d, s = [a["payload"] for a in trace["artifacts"]]
     document = trace["source"]["document_excerpt"]
@@ -118,7 +121,7 @@ def _inject_challenge(clean: dict[str, Any], fault: str, other_ticker: str) -> d
     elif fault == "definition_conflict":
         x["definition"] = "basic_eps"
     elif fault == "missing_handoff":
-        # 训练注入删除 qualification_refs；challenge 改为丢失 source_ref。
+        # The training injection deletes qualification_refs; the challenge drops source_ref instead.
         d["source_ref"] = ""
     elif fault == "role_violation":
         e["recommendation"] = "hold"
@@ -152,7 +155,8 @@ def build_challenge(
     rng.shuffle(candidates)
     if len(candidates) < n_clean:
         raise RuntimeError(
-            f"严格 clean 条件下仅有 {len(candidates)} 个未使用来源，少于 {n_clean}")
+            f"only {len(candidates)} unused sources meet the strict clean condition, "
+            f"fewer than {n_clean}")
     bases = candidates[:n_clean]
     clean_by_id: dict[str, dict[str, Any]] = {}
     other_by_id: dict[str, str] = {}
